@@ -1,0 +1,13 @@
+{
+    "name": "robot-client",
+    "version": "0.0.1",
+    "description": "A distributed load test framework",
+    "author": "<piaohai@gmail.com>",
+		"dependencies": {
+			"socket.io-client": ">=0.9.6"
+			,"socket.io": ">=0.9.6"
+			,"mqttjs": ">=0.1.7"
+			,"amqp": ">=0.0.1"
+			, "underscore": ">=1.0.0"
+		}
+}
