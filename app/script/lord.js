@@ -6,11 +6,11 @@ var mysql = require('mysql');
 var pomelo = require('./../../app/data/pomelo.js');
 
 var client = mysql.createConnection({
-  host: config.mysql.host,
-  user: config.mysql.user,
-  port:config.mysql.port,
-  password: config.mysql.password,
-  database: config.mysql.database
+  host: '10.120.144.102',
+  user: 'xy',
+  port: 3306,
+  password: 'dev',
+  database: 'Pomelo' 
 });
 
 
@@ -27,7 +27,9 @@ var connected = false;
 
 var offset = typeof actor!='undefined' ? actor.id : 0;
 
-console.log(offset + ' ' + actor.id);
+if (typeof actor !== 'undefined'){
+	console.log(offset + ' ' + actor.id);
+}
 
 queryHero(client,1,offset,function(error,users){
    var user = users[0];
@@ -39,7 +41,7 @@ queryHero(client,1,offset,function(error,users){
 });
 
 function queryEntry(uid, callback) {
-  pomelo.init({host: config.apps.host, port: config.apps.port, log: true}, function() {
+  pomelo.init({host: '114.113.202.141', port: 3014, log: true}, function() {
         pomelo.request('gate.gateHandler.queryEntry', { uid: uid}, function(data) {
           pomelo.disconnect();
           if(data.code === 2001) {
