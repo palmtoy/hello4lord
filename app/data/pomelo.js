@@ -24,6 +24,8 @@ var protobuf = require('pomelo-protobuf');
 
   var heartbeatInterval = 5000;
   var heartbeatTimeout = heartbeatInterval * 2;
+	var nextHeartbeatTimeout = 0;
+	var gapThreshold = 100; // heartbeat gap threshold
   var heartbeatId = null;
   var heartbeatTimeoutId = null;
 
@@ -66,6 +68,10 @@ var protobuf = require('pomelo-protobuf');
     };
     var onmessage = function(event) {
       processPackage(Package.decode(event.data), cb);
+      // new package arrived, update the heartbeat timeout
+      if(heartbeatTimeout) {
+        nextHeartbeatTimeout = Date.now() + heartbeatTimeout;
+      }
     };
     var onerror = function(event) {
       pomelo.emit('io-error', event);
@@ -166,12 +172,20 @@ var protobuf = require('pomelo-protobuf');
       heartbeatId = null;
       send(obj);
 
-      heartbeatTimeoutId = setTimeout(function() {
-        console.error('server heartbeat timeout');
-        pomelo.emit('heartbeat timeout');
-        pomelo.disconnect();
-      }, heartbeatTimeout);
+			nextHeartbeatTimeout = Date.now() + heartbeatTimeout;
+      heartbeatTimeoutId = setTimeout(heartbeatTimeoutCb, heartbeatTimeout);
     }, heartbeatInterval);
+  };
+
+  var heartbeatTimeoutCb = function() {
+    var gap = nextHeartbeatTimeout - Date.now();
+    if(gap > gapThreshold) {
+      heartbeatTimeoutId = setTimeout(heartbeatTimeoutCb, gap);
+    } else {
+      console.error('server heartbeat timeout');
+      pomelo.emit('heartbeat timeout');
+      pomelo.disconnect();
+    }
   };
 
   var handshake = function(data){
