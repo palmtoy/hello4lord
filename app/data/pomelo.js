@@ -14,6 +14,13 @@ var protobuf = require('pomelo-protobuf');
     };
   }
 
+  var JS_WS_CLIENT_TYPE = 'js-websocket';
+  var JS_WS_CLIENT_VERSION = '0.0.1';
+
+  var RES_OK = 200;
+  var RES_FAIL = 500;
+  var RES_OLD_CLIENT = 501;
+
   var pomelo = Object.create(EventEmitter.prototype); // object extend from object
   var socket = null;
   var reqId = 0;
@@ -29,10 +36,12 @@ var protobuf = require('pomelo-protobuf');
   var heartbeatId = null;
   var heartbeatTimeoutId = null;
 
+	var handshakeCallback = null;
+
   var handshakeBuffer = {
     'sys':{
-      'version':'1.1.1',
-      'heartbeat':1
+			type: JS_WS_CLIENT_TYPE,
+      version: JS_WS_CLIENT_VERSION
     },
     'user':{
     }
@@ -55,6 +64,7 @@ var protobuf = require('pomelo-protobuf');
     if (!params.type) {
       console.log('init websocket');
       handshakeBuffer.user = params.user;
+			handshakeCallback = params.handshakeCallback;
       this.initWebSocket(url,cb);
     }
   };
@@ -189,11 +199,20 @@ var protobuf = require('pomelo-protobuf');
   };
 
   var handshake = function(data){
-    var obj = Package.encode(Package.TYPE_HANDSHAKE_ACK);
     data = JSON.parse(Protocol.strdecode(data));
+    if(data.code === RES_OLD_CLIENT) {
+      pomelo.emit('error', 'client version not fullfill');
+      return;
+    }
+
+    if(data.code !== RES_OK) {
+      pomelo.emit('error', 'handshake fail');
+      return;
+    }
 
     handshakeInit(data);
 
+    var obj = Package.encode(Package.TYPE_HANDSHAKE_ACK);
     send(obj);
     if(initCallback) {
       initCallback(socket);
@@ -310,13 +329,19 @@ var protobuf = require('pomelo-protobuf');
   };
 
   var handshakeInit = function(data){
-    heartbeatInterval = data.sys.heartbeat;       // heartbeat interval
-    heartbeatTimeout = heartbeatInterval * 2;     // max heartbeat timeout
+    if(data.sys && data.sys.heartbeat) {
+      heartbeatInterval = data.sys.heartbeat * 1000;   // heartbeat interval
+      heartbeatTimeout = heartbeatInterval * 2;        // max heartbeat timeout
+    } else {
+      heartbeatInterval = 0;
+      heartbeatTimeout = 0;
+    }
 
     initData(data);
 
-    setDict(data.sys.dict);
-    initProtos(data.sys.protos);
+    if(typeof handshakeCallback === 'function') {
+      handshakeCallback(data.user);
+    }
   };
 
   //Initilize data used in pomelo client
