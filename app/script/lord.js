@@ -222,7 +222,6 @@ var removeEntities = function(entityId){
  * 处理用户攻击请求
  */
  pomelo.on('onAttack',function(data){
-  //console.log("fighting: " + JSON.stringify(data));
   if (data.result.result === 2) {
     var attackId = parseInt(data.attacker);
     var targetId = parseInt(data.target);
@@ -398,8 +397,13 @@ var attack = function(entity) {
       return;
     }
     pomelo.lastAttAck = entity;
+		/*
     console.log(pomelo.player.id + '~' + pomelo.player.name +
       ' attack ' + entity.entityId + ', in area ' + pomelo.player.areaId + '.');
+		*/
+		console.log('%d~%s attack %d, in area %d, pos(%d, %d)',
+			pomelo.player.id, pomelo.player.name, entity.entityId,
+			pomelo.player.areaId, pomelo.player.x, pomelo.player.y);
     var attackId = entity.entityId;
     var skillId = 1;
     var route = 'area.fightHandler.attack';
