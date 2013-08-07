@@ -389,31 +389,44 @@ var attackEvent = function(){
   }
 };
 
- 
 var attack = function(entity) {
-  if (!entity) {return;}
+  if (!entity) {
+    return;
+  }
   if (entity.type === 'mob') {
+    if (entity.died) {
+      return;
+    }
     pomelo.lastAttAck = entity;
-    console.log(pomelo.player.id + ' : ' + pomelo.player.name +
-      ' attack ' + entity.entityId + '. In area ' + pomelo.player.areaId);
+    console.log(pomelo.player.id + '~' + pomelo.player.name +
+      ' attack ' + entity.entityId + ', in area ' + pomelo.player.areaId + '.');
     var attackId = entity.entityId;
     var skillId = 1;
     var route = 'area.fightHandler.attack';
     var areaId = pomelo.player.areaId;
-    var msg = {areaId:areaId,playerId: pomelo.player.id, targetId:attackId, skillId: skillId};
-    monitor('monitorStart','attack');
-    pomelo.request(route,msg,function(data){
-      monitor('monitorEnd','attack');
+    // var msg = { areaId: areaId, playerId: pomelo.player.id, targetId:attackId, skillId: skillId};
+    var msg = {targetId: attackId};
+    monitor('incr', 'attackStart');
+    monitor('start','attack', 100);
+		/*
+    pomelo.request(route, msg, function(data){
+      monitor('end','attack', 100);
+      monitor('incr', 'attackEnd');
     });
+		*/
+    pomelo.notify(route, msg);
   } else if (entity.type === 'item' || entity.type === 'equipment') {
     var route = 'area.playerHandler.pickItem';
     var attackId = entity.entityId;
-    var msg = { areaId:pomelo.player.areaId, playerId:pomelo.player.id, targetId:attackId};
-    //console.log(' begin pickup == %j , %j ',entity.type,msg); 
-    monitor('monitorStart','pickItem');
+    // var msg = { areaId:pomelo.player.areaId, playerId:pomelo.player.id, targetId:attackId};
+    var msg = {areaId: pomelo.player.areaId, playerId: pomelo.player.id, targetId: attackId};
+    monitor('monitorStart', 'pickItem');
+		/*
     pomelo.request(route,msg,function(data){
       monitor('monitorEnd','pickItem');
     });
+		*/
+    pomelo.notify(route, msg);
   }
 }
 
