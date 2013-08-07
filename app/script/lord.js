@@ -9,10 +9,10 @@ var selfUid = null;
 
 var client = mysql.createConnection({
   host: '10.120.144.102',
-    user: 'xy',
-    port: 3306,
-    password: 'dev',
-    database: 'Pomelo' 
+  user: 'xy',
+  port: 3306,
+  password: 'dev',
+  database: 'Pomelo'
 });
 
 var EntityType = {
@@ -24,7 +24,7 @@ var EntityType = {
 };
 
 var monitor = function(){
-  if (typeof actor!='undefined'){
+  if (typeof actor !== 'undefined'){
     var args = Array.prototype.slice.call(arguments,1);
     actor.emit(arguments[0],args,actor.id);
   } else {
@@ -194,7 +194,7 @@ var afterLogin = function(pomelo,data){
         typeEntities.push(array[i]);
       }
       pomelo.entities[key] = typeEntities;
-      console.log('%j : onAddEntities ~ key = %j', Date(), key);
+      // console.log('%j : onAddEntities ~ key = %j', Date(), key);
     }
   });
 
@@ -382,15 +382,19 @@ var afterLogin = function(pomelo,data){
   }
 
   var attackEvent = function(){
-    console.log('1 ~ %d~%s is attacking, in area %d, pos(%d, %d)',
-      selfPlayer.id, selfPlayer.name, selfPlayer.areaId,
-      selfPlayer.x, selfPlayer.y);
+    /*
+     console.log('1 ~ %d~%s is attacking, in area %d, pos(%d, %d)',
+     selfPlayer.id, selfPlayer.name, selfPlayer.areaId,
+     selfPlayer.x, selfPlayer.y);
+     */
     if (!selfPlayer.entityId || !!pomelo.isDead ) {
       return;
     }
-    console.log('2 ~ %d~%s is attacking, in area %d, pos(%d, %d)',
-      selfPlayer.id, selfPlayer.name, selfPlayer.areaId,
-      selfPlayer.x, selfPlayer.y);
+    /*
+     console.log('2 ~ %d~%s is attacking, in area %d, pos(%d, %d)',
+     selfPlayer.id, selfPlayer.name, selfPlayer.areaId,
+     selfPlayer.x, selfPlayer.y);
+     */
     var entity = pomelo.lastAttAck;
     if (!!entity) {
       attack(entity);
