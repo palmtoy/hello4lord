@@ -356,19 +356,20 @@ var afterLogin = function(pomelo,data){
     if (!!pomelo.isDead) {return;}
     var paths= getPath();
     var msg = {path:paths};
-    monitor('monitorStart','move');
-    pomelo.request('area.playerHandler.move',msg,function(data){
-      monitor('monitorEnd','move');
-      if (data.code !=200) {
-        console.error('wrong path %j entityId= %j',msg,pomelo.player.entityId);
-        return moveDirection++;
+    monitor('monitorStart', 'move');
+    pomelo.request('area.playerHandler.move', msg, function(data) {
+      monitor('monitorEnd', 'move');
+      if (data.code !== 200) {
+        console.error('wrong path %j entityId = %j', msg, pomelo.player.entityId);
+        return ++moveDirection;
       }
       pomelo.player.x = paths[1].x;
       pomelo.player.y = paths[1].y;
-      if (moveDirection>=8){ moveDirection = 1+Math.floor(Math.random()*5);}
+      if (moveDirection >= 8) {
+        moveDirection = 1 + Math.floor(Math.random()*5);
+      }
     });
   }
-
 
   var attackEvent = function(){
     if (!pomelo.player.entityId || !!pomelo.isDead ) {
