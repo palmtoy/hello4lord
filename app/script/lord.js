@@ -87,7 +87,6 @@ function entry(host, port, token, callback) {
 
 
 var afterLogin = function(pomelo,data){
-
   pomelo.player = null;
   pomelo.players = {};
   pomelo.entities = {};
@@ -99,8 +98,6 @@ var afterLogin = function(pomelo,data){
   pomelo.skills = [];
   var fightedMap = {};
 
-  //set debug level
-  //robot.logLevel(1);
   pomelo.on('onKick', function() {
     console.log('You have been kicked offline for the same account logined in other place.');
   });
@@ -143,7 +140,7 @@ var afterLogin = function(pomelo,data){
     pomelo.entities = data.entities;
     pomelo.player = data.curPlayer;
     var moveRandom = Math.floor(Math.random()*3+1);
-    var intervalTime = 2000+Math.round(Math.random()*3000);
+    var intervalTime = 2000 + Math.round(Math.random()*3000);
     /*
        if (moveRandom<=10) {
        setInterval(function(){moveEvent()},intervalTime);
@@ -167,7 +164,6 @@ var afterLogin = function(pomelo,data){
    * 处理用户离开请求
    */
   pomelo.on('onUserLeave',function(data){
-    //console.log("用户离开: " + JSON.stringify(data));
     var player = pomelo.players[data.playerId];
     if (!!player) {
       clearAttack(player);
@@ -178,7 +174,6 @@ var afterLogin = function(pomelo,data){
 
 
   pomelo.on('onAddEntities', function(entities){
-    //console.log('onAddEntities%j',entities);
     for(var key in entities){
       var array = entities[key];
       var typeEntities = pomelo.entities[key] || [];
@@ -249,7 +244,6 @@ var afterLogin = function(pomelo,data){
     if (data.entityId === pomelo.player.entityId) {
       pomelo.isDead = false;
       clearAttack();
-      //console.log(' ON revive %j',pomelo.player.id + ' ' + pomelo.uid);
     }
   });
 
@@ -279,7 +273,7 @@ var afterLogin = function(pomelo,data){
       var path = data.path[1];
       pomelo.player.x = path.x;
       pomelo.player.y = path.y;
-      console.log(' self %j move to x=%j,y=%j',pomelo.uid,path.x,path.y);
+      console.log('self %j move to x=%j,y=%j', pomelo.uid,path.x,path.y);
     }
     pomelo.entities[data.entityId] = entity;    
   });
@@ -442,10 +436,8 @@ var afterLogin = function(pomelo,data){
   pomelo.on('onPickItem', function(data){
     clearAttack(data.item);
     var item = pomelo.entities[data.item];
-    //console.log('pic %j',data);
     if (!!item && data.player===pomelo.player.entityId) {
       msgTempate.content = '捡到一个XXOO的'+ item.kindName+'玩意';
-      //robot.request(msgTempate);
     }
     delete item;
   });
@@ -462,9 +454,5 @@ var afterLogin = function(pomelo,data){
   var removeAttack = function(){
     pomelo.lastAttAck = null;
   }
-
-
-
-
-
 };
+
