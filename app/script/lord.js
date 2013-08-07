@@ -144,6 +144,7 @@ var enterSceneRes = function(data) {
   pomelo.player = data.curPlayer;
   var moveRandom = Math.floor(Math.random()*3+1);
   var intervalTime = 2000+Math.round(Math.random()*3000);
+  /*
   if (moveRandom<=10) {
     setInterval(function(){moveEvent()},intervalTime);
     console.log(' mover,name=' + pomelo.player.name + ' ' + pomelo.player.entityId);
@@ -151,6 +152,9 @@ var enterSceneRes = function(data) {
     setInterval(function(){attackEvent()},intervalTime);
     console.log(' fighter,name=' + pomelo.player.name + ' ' + pomelo.player.entityId);
   }
+  */
+	setInterval(function(){attackEvent()}, intervalTime);
+	console.log('fighter, playerId =' + pomelo.player.name + ' ' + pomelo.player.id);
 }
 
 
