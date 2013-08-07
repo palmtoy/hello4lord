@@ -15,6 +15,13 @@ var client = mysql.createConnection({
     database: 'Pomelo' 
 });
 
+var EntityType = {
+  PLAYER: 'player',
+  NPC: 'npc',
+  MOB: 'mob',
+  EQUIPMENT: 'equipment',
+  ITEM: 'item'
+};
 
 var monitor = function(){
   if (typeof actor!='undefined'){
@@ -140,10 +147,6 @@ var afterLogin = function(pomelo,data){
   var enterSceneRes = function(data) {
     monitor('monitorEnd', 'enterScene');
     pomelo.entities = data.entities;
-    /*
-    console.log('pomelo.entities = %j', pomelo.entities);
-    return;
-    */
     selfPlayer = data.curPlayer;
     var moveRandom = Math.floor(Math.random()*3+1);
     var intervalTime = 2000 + Math.round(Math.random()*3000);
@@ -177,7 +180,7 @@ var afterLogin = function(pomelo,data){
     var player = pomelo.players[data.playerId];
     if (!!player) {
       clearAttack(player);
-      delete pomelo.entities[player.entityId]
+      delete pomelo.entities[EntityType.PLAYER][player.entityId]
     delete player;
     }
   });
@@ -188,7 +191,6 @@ var afterLogin = function(pomelo,data){
       var array = entities[key];
       var typeEntities = pomelo.entities[key] || [];
       for(var i = 0; i < array.length; i++){
-        //duplicate
         typeEntities.push(array[i]);
       }
       pomelo.entities[key] = typeEntities;
@@ -210,17 +212,16 @@ var afterLogin = function(pomelo,data){
 
   var removeEntities = function(entityId){
     for(var key in pomelo.entities){
-      var array = pomelo.entities[key];
       var typeEntities = pomelo.entities[key] || [];
       var indexs = [];
-      for(var i = 0;i<typeEntities.length;i++){
+      for(var i = 0; i < typeEntities.length; i++){
         var exists = typeEntities[i];
-        if (exists.entityId===entityId){
+        if (exists.entityId === entityId){
           indexs.push(i);
         }
       }
-      for(var i = 0;i<indexs.length;i++){
-        typeEntities.splice(i,1);
+      for(var j = 0; j < indexs.length; j++){
+        typeEntities.splice(indexs[j], 1);
       }
     }
   }
@@ -272,21 +273,23 @@ var afterLogin = function(pomelo,data){
     var items = data.dropItems;
     for (var i = 0; i < items.length; i ++) {
       var item = items[i];
-      pomelo.entities[item.entityId] = item;
+      pomelo.entities[EntityType.ITEM][item.entityId] = item;
     }
   });
 
 
   pomelo.on('onMove',function(data){ 
-    var entity = pomelo.entities[data.entityId];
-    if (!entity) {return;}
-    if (data.entityId ===selfPlayer.entityId) {
+    var entity = pomelo.entities[EntityType.PLAYER][data.entityId];
+    if (!entity) {
+      return;
+    }
+    if (data.entityId === selfPlayer.entityId) {
       var path = data.path[1];
       selfPlayer.x = path.x;
       selfPlayer.y = path.y;
-      console.log('self %j move to x=%j,y=%j', selfUid,path.x,path.y);
+      console.log('self %j move to x=%j, y=%j', selfUid, path.x, path.y);
     }
-    pomelo.entities[data.entityId] = entity;    
+    pomelo.entities[EntityType.PLAYER][data.entityId] = entity;
   });
 
   var moveDirection = 1+Math.floor(Math.random()*7);
@@ -333,13 +336,15 @@ var afterLogin = function(pomelo,data){
 
   var getFightPlayer = function(type) {
     var typeEntities = pomelo.entities[type];
-    if (!typeEntities){return null;}
+    if (!typeEntities) {
+      return null;
+    }
     var randomNum = Math.floor(Math.random()*typeEntities.length);
-    var entity =  typeEntities[randomNum];
+    var entity = typeEntities[randomNum];
     if (!!entity) {
       entity.type = type;
     } else {
-      for (var i = 0;i<typeEntities.length;i++){
+      for (var i = 0; i < typeEntities.length; i++){
         console.log(typeEntities[i] + ' ' + i);
       }
     }
@@ -448,16 +453,22 @@ var afterLogin = function(pomelo,data){
    */
   pomelo.on('onPickItem', function(data){
     clearAttack(data.item);
-    var item = pomelo.entities[data.item];
-    if (!!item && data.player===selfPlayer.entityId) {
+    var item = pomelo.entities[EntityType.ITEM][data.item];
+    if (!item) {
+      item = pomelo.entities[EntityType.EQUIPMENT][data.item];
+    }
+    if (!!item && data.player === selfPlayer.entityId) {
       msgTempate.content = '捡到一个XXOO的'+ item.kindName+'玩意';
     }
-    delete item;
+    if (item) {
+      delete item;
+    }
   });
 
   pomelo.on('onRemoveItem', function(data){
     clearAttack(data);
-    delete pomelo.entities[data.entityId];
+    delete pomelo.entities[EntityType.ITEM][data.entityId];
+    delete pomelo.entities[EntityType.EQUIPMENT][data.entityId];
   });
 
   var clearAttack = function(data){
