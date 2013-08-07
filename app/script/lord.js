@@ -394,7 +394,8 @@ var attack = function(entity) {
   if (!entity) {return;}
   if (entity.type === 'mob') {
     pomelo.lastAttAck = entity;
-    console.log(' last attack ' + entity.entityId)
+    console.log(pomelo.player.id + ' : ' + pomelo.player.name +
+      ' attack ' + entity.entityId + '. In area ' + pomelo.player.areaId);
     var attackId = entity.entityId;
     var skillId = 1;
     var route = 'area.fightHandler.attack';
