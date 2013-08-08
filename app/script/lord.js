@@ -273,23 +273,40 @@ var afterLogin = function(pomelo,data){
     var items = data.dropItems;
     for (var i = 0; i < items.length; i ++) {
       var item = items[i];
-      pomelo.entities[EntityType.ITEM][item.entityId] = item;
+      pomelo.entities[EntityType.EQUIPMENT][item.entityId] = item;
     }
   });
 
 
-  pomelo.on('onMove',function(data){ 
-    var entity = pomelo.entities[EntityType.PLAYER][data.entityId];
+  pomelo.on('onMove',function(data){
+    // console.log("OnMove ~ data = %j", data);
+    var isPlayer = true;
+    var entity = null;
+    if (pomelo.entities[EntityType.PLAYER]) {
+      entity = pomelo.entities[EntityType.PLAYER][data.entityId];
+    }
     if (!entity) {
-      return;
+      // console.log("1 ~ OnMove is running ...");
+      if (pomelo.entities[EntityType.MOB]) {
+        entity = pomelo.entities[EntityType.MOB][data.entityId];
+      }
+      isPlayer = false;
+      if (!entity) {
+        return;
+      }
     }
     if (data.entityId === selfPlayer.entityId) {
+      // console.log("2 ~ OnMove is running ...");
       var path = data.path[1];
       selfPlayer.x = path.x;
       selfPlayer.y = path.y;
-      console.log('self %j move to x=%j, y=%j', selfUid, path.x, path.y);
+      // console.log('self %j move to x=%j, y=%j', selfUid, path.x, path.y);
     }
-    pomelo.entities[EntityType.PLAYER][data.entityId] = entity;
+    if (isPlayer) {
+      pomelo.entities[EntityType.PLAYER][data.entityId] = entity;
+    } else {
+      pomelo.entities[EntityType.MOB][data.entityId] = entity;
+    }
   });
 
   var moveDirection = 1+Math.floor(Math.random()*7);
@@ -352,9 +369,9 @@ var afterLogin = function(pomelo,data){
   }
 
   var getFirstFight = function() {
-    var nearEntity = getFightPlayer('mob');
-    if (!nearEntity) { nearEntity = getFightPlayer('item')};
-    if (!nearEntity) { nearEntity = getFightPlayer('player')};
+    var nearEntity = getFightPlayer(EntityType.MOB);
+    if (!nearEntity) { nearEntity = getFightPlayer(EntityType.ITEM)};
+    if (!nearEntity) { nearEntity = getFightPlayer(EntityType.PLAYER)};
     return nearEntity;
   }
 
@@ -462,7 +479,7 @@ var afterLogin = function(pomelo,data){
       item = pomelo.entities[EntityType.EQUIPMENT][data.item];
     }
     if (!!item && data.player === selfPlayer.entityId) {
-      msgTempate.content = '捡到一个XXOO的'+ item.kindName+'玩意';
+      msgTempate.content = '捡到一个XXOO的' + item.kindName + '玩意';
     }
     if (item) {
       delete item;
