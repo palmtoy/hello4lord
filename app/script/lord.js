@@ -7,7 +7,8 @@ var EventEmitter = require('events').EventEmitter;
 var protocol = require('pomelo-protocol');
 var protobuf = require('pomelo-protobuf');
 var utils = require('./../../app/script/utils');
-var moverStat = require('./../../app/script/statistic').moverStat;
+var moveStat = require('./../../app/script/statistic').moveStat;
+var attackStat = require('./../../app/script/statistic').attackStat;
 
   if (typeof Object.create !== 'function') {
     Object.create = function (o) {
@@ -545,20 +546,20 @@ var afterLogin = function(pomelo,data){
         pomelo.player.id, pomelo.player.name, intervalTime);
     }
     */
+    /*
     setInterval(function() {
       moveEvent();
     }, intervalTime);
     console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, mover = %s, intervalTime = %d',
       pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
-    /*
+    */
     setInterval(function() {
       // console.log('%s : is running ... playerId = %d, fighter = %s, intervalTime = %d',
         // Date(), pomelo.player.id, pomelo.player.name, intervalTime);
       attackEvent();
     }, intervalTime);
-    console.log('playerId = %d, fighter = %s, intervalTime = %d',
-      pomelo.player.id, pomelo.player.name, intervalTime);
-    */
+    console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, fighter = %s, intervalTime = %d',
+      pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
   }
 
   var sendChat = function() {
@@ -790,11 +791,11 @@ var afterLogin = function(pomelo,data){
       if (moveDirection >= 8) {
         moveDirection = Math.floor(Math.random()*5 + 1);
       }
-      if (!moverStat.idDict[pomelo.player.id]) {
-        moverStat.idDict[pomelo.player.id] = true;
-        moverStat.total++;
+      if (!moveStat.idDict[pomelo.player.id]) {
+        moveStat.idDict[pomelo.player.id] = true;
+        moveStat.total++;
       }
-      console.log('Total mover num = %j', moverStat.total);
+      console.log('Total mover num = %j', moveStat.total);
       console.log('%s : %d~%s is moving, in area %d, pos(%d, %d)',
         Date(), pomelo.player.id, pomelo.player.name,
         pomelo.player.areaId, pomelo.player.x, pomelo.player.y);
@@ -838,9 +839,7 @@ var afterLogin = function(pomelo,data){
         return;
       }
       pomelo.lastAttAck = entity;
-      console.log('%s : %d~%s attack %d, in area %d, pos(%d, %d)',
-          Date(), pomelo.player.id, pomelo.player.name, entity.entityId,
-          pomelo.player.areaId, pomelo.player.x, pomelo.player.y);
+
       var attackId = entity.entityId;
       var skillId = 1;
       var route = 'area.fightHandler.attack';
@@ -856,6 +855,15 @@ var afterLogin = function(pomelo,data){
          });
          */
       pomelo.notify(route, msg);
+
+      if (!attackStat.idDict[pomelo.player.id]) {
+        attackStat.idDict[pomelo.player.id] = true;
+        attackStat.total++;
+      }
+      console.log('Total attacker num = %j', attackStat.total);
+      console.log('%s : %d~%s attack %d, in area %d, pos(%d, %d)',
+        Date(), pomelo.player.id, pomelo.player.name, entity.entityId,
+        pomelo.player.areaId, pomelo.player.x, pomelo.player.y);
     } else if (entity.type === 'item' || entity.type === 'equipment') {
       var route = 'area.playerHandler.pickItem';
       var attackId = entity.entityId;
