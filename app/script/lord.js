@@ -7,7 +7,7 @@ var EventEmitter = require('events').EventEmitter;
 var protocol = require('pomelo-protocol');
 var protobuf = require('pomelo-protobuf');
 var utils = require('./../../app/script/utils');
-var moverStat = require('./../../app/script/statistic');
+var moverStat = require('./../../app/script/statistic').moverStat;
 
   if (typeof Object.create !== 'function') {
     Object.create = function (o) {
@@ -507,19 +507,21 @@ var afterLogin = function(pomelo,data){
       msgTempate.uid = pomelo.uid;
       msgTempate.playerId = pomelo.player.id;
       msgTempate.from = pomelo.player.name,
-        msgTempate.areaId = pomelo.player.areaId;
+      msgTempate.areaId = pomelo.player.areaId;
       setTimeout(function(){
         enterScene();
-      },1000);
+      }, 1000);
     }
   };
 
   login(data);
 
   var enterScene = function() {
-    var msg = {uid:pomelo.uid, playerId: pomelo.player.id, areaId: pomelo.player.areaId};
-    monitor('monitorStart','enterScene');
-    pomelo.request("area.playerHandler.enterScene",msg,enterSceneRes);
+    var msg = {uid: pomelo.uid, playerId: pomelo.player.id, areaId: pomelo.player.areaId};
+    monitor('monitorStart', 'enterScene');
+    pomelo.request("area.playerHandler.enterScene", msg, enterSceneRes);
+    console.log('1 ~ EnterScene ~ areaId = %d, playerId = %d, name = %s',
+      pomelo.player.areaId, pomelo.player.id, pomelo.player.name);
   }
 
   var enterSceneRes = function(data) {
@@ -546,8 +548,8 @@ var afterLogin = function(pomelo,data){
     setInterval(function() {
       moveEvent();
     }, intervalTime);
-    console.log('playerId = %d, mover = %s, intervalTime = %d',
-      pomelo.player.id, pomelo.player.name, intervalTime);
+    console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, mover = %s, intervalTime = %d',
+      pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
     /*
     setInterval(function() {
       // console.log('%s : is running ... playerId = %d, fighter = %s, intervalTime = %d',
@@ -779,7 +781,8 @@ var afterLogin = function(pomelo,data){
     pomelo.request('area.playerHandler.move', msg, function(data) {
       monitor('monitorEnd', 'move');
       if (data.code !== RES_OK) {
-        console.error('wrong path %j entityId = %j', msg, pomelo.player.entityId);
+        console.error('wrong path! %s %j : %d~%s, in area %d',
+          Date(), msg, pomelo.player.id, pomelo.player.name, pomelo.player.areaId);
         return ++moveDirection;
       }
       pomelo.player.x = paths[1].x;

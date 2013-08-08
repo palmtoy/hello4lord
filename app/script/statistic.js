@@ -1,2 +1,5 @@
-var moverStat = {idDict: {}, total: 0};
-module.exports = moverStat;
+var stat = {
+  moverStat: {idDict: {}, total: 0},
+  attackerStat: {idDict: {}, total: 0}
+};
+module.exports = stat;
