@@ -698,45 +698,47 @@ var afterLogin = function(pomelo,data){
     }
   });
 
-  var moveDirection = 1+Math.floor(Math.random()*7);
+  var moveDirection = Math.floor(Math.random()*7 + 1);
+  var moverStat = {idDict: {}, total: 0};
 
   var getPath = function() {
-    var FIX_SPACE = Math.round(Math.random()*pomelo.player.walkSpeed);
+    var FIX_SPACE = Math.floor(Math.random() * pomelo.player.walkSpeed + 1);
     var startX = pomelo.player.x;
     var startY = pomelo.player.y;
     var endX = startX;
     var endY = startY;
     switch(moveDirection) {
       case 1:
-        endX+=FIX_SPACE;break;
+        endX += FIX_SPACE;
+        break;
       case 2:
-        endX+=FIX_SPACE;
-        endY+=FIX_SPACE;
+        endX += FIX_SPACE;
+        endY += FIX_SPACE;
         break;
       case 3:
-        endY+=FIX_SPACE;
+        endY += FIX_SPACE;
         break;
       case 4:
-        endY+=FIX_SPACE;
-        endX-=FIX_SPACE;
+        endX -= FIX_SPACE;
+        endY += FIX_SPACE;
         break;
       case 5:
-        endX-=FIX_SPACE;
+        endX -= FIX_SPACE;
         break;
       case 6:
-        endX-=FIX_SPACE;
-        endY-=FIX_SPACE;
+        endX -= FIX_SPACE;
+        endY -= FIX_SPACE;
         break;
       case 7 :
-        endX-=FIX_SPACE;
+        endX -= FIX_SPACE;
         break;
       case 8 :
       default:
-        endX+=FIX_SPACE;
-        endY-=FIX_SPACE;
+        endX += FIX_SPACE;
+        endY -= FIX_SPACE;
         break;
     }
-    var path = [{x: startX, y: startY}, {x:endX, y:endY}];
+    var path = [{x: startX, y: startY}, {x: endX, y: endY}];
     return path;
   }
 
@@ -775,7 +777,7 @@ var afterLogin = function(pomelo,data){
     monitor('monitorStart', 'move');
     pomelo.request('area.playerHandler.move', msg, function(data) {
       monitor('monitorEnd', 'move');
-      if (data.code !== 200) {
+      if (data.code !== RES_OK) {
         console.error('wrong path %j entityId = %j', msg, pomelo.player.entityId);
         return ++moveDirection;
       }
@@ -784,6 +786,11 @@ var afterLogin = function(pomelo,data){
       if (moveDirection >= 8) {
         moveDirection = Math.floor(Math.random()*5 + 1);
       }
+      if (!moverStat.idDict[pomelo.player.id]) {
+        moverStat.idDict[pomelo.player.id] = true;
+        ++moverStat.total;
+      }
+      console.log('Total mover num = %j', moverStat.total);
       console.log('%s : %d~%s is moving, in area %d, pos(%d, %d)',
         Date(), pomelo.player.id, pomelo.player.name,
         pomelo.player.areaId, pomelo.player.x, pomelo.player.y);
