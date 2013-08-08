@@ -6,6 +6,8 @@ var Message = Protocol.Message;
 var EventEmitter = require('events').EventEmitter;
 var protocol = require('pomelo-protocol');
 var protobuf = require('pomelo-protobuf');
+var utils = require('./../../app/script/utils');
+var moverStat = require('./../../app/script/statistic');
 
   if (typeof Object.create !== 'function') {
     Object.create = function (o) {
@@ -699,7 +701,6 @@ var afterLogin = function(pomelo,data){
   });
 
   var moveDirection = Math.floor(Math.random()*7 + 1);
-  var moverStat = {idDict: {}, total: 0};
 
   var getPath = function() {
     var FIX_SPACE = Math.floor(Math.random() * pomelo.player.walkSpeed + 1);
