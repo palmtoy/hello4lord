@@ -526,6 +526,7 @@ var afterLogin = function(pomelo,data){
     pomelo.player = data.curPlayer;
     var moveRandom = Math.floor(Math.random()*2 + 1);
     var intervalTime = 2000 + Math.round(Math.random()*3000);
+    /*
     if (moveRandom === 1) {
       setInterval(function() {
         moveEvent();
@@ -539,12 +540,13 @@ var afterLogin = function(pomelo,data){
       console.log('playerId = %d, fighter = %s, intervalTime = %d',
         pomelo.player.id, pomelo.player.name, intervalTime);
     }
-    /*
+    */
     setInterval(function() {
       moveEvent();
     }, intervalTime);
     console.log('playerId = %d, mover = %s, intervalTime = %d',
       pomelo.player.id, pomelo.player.name, intervalTime);
+    /*
     setInterval(function() {
       // console.log('%s : is running ... playerId = %d, fighter = %s, intervalTime = %d',
         // Date(), pomelo.player.id, pomelo.player.name, intervalTime);
@@ -768,8 +770,8 @@ var afterLogin = function(pomelo,data){
 
   var moveEvent = function() {
     if (!!pomelo.isDead) {return;}
-    var paths= getPath();
-    var msg = {path:paths};
+    var paths = getPath();
+    var msg = {path: paths};
     monitor('monitorStart', 'move');
     pomelo.request('area.playerHandler.move', msg, function(data) {
       monitor('monitorEnd', 'move');
@@ -780,8 +782,11 @@ var afterLogin = function(pomelo,data){
       pomelo.player.x = paths[1].x;
       pomelo.player.y = paths[1].y;
       if (moveDirection >= 8) {
-        moveDirection = 1 + Math.floor(Math.random()*5);
+        moveDirection = Math.floor(Math.random()*5 + 1);
       }
+      console.log('%s : %d~%s is moving, in area %d, pos(%d, %d)',
+        Date(), pomelo.player.id, pomelo.player.name,
+        pomelo.player.areaId, pomelo.player.x, pomelo.player.y);
     });
   }
 
