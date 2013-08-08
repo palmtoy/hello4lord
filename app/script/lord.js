@@ -524,24 +524,27 @@ var afterLogin = function(pomelo,data){
     monitor('monitorEnd', 'enterScene');
     pomelo.entities = data.entities;
     pomelo.player = data.curPlayer;
-    var moveRandom = Math.floor(Math.random()*3+1);
+    var moveRandom = Math.floor(Math.random()*2 + 1);
     var intervalTime = 2000 + Math.round(Math.random()*3000);
-    /*
-       if (moveRandom<=10) {
-       setInterval(function(){moveEvent()},intervalTime);
-       console.log(' mover,name=' + pomelo.player.name + ' ' + pomelo.player.entityId);
-       } else { 
-       setInterval(function(){attackEvent()},intervalTime);
-       console.log(' fighter,name=' + pomelo.player.name + ' ' + pomelo.player.entityId);
-       }
-    */
+    if (moveRandom === 1) {
+      setInterval(function() {
+        moveEvent();
+      }, intervalTime);
+      console.log('playerId = %d, mover = %s, intervalTime = %d',
+        pomelo.player.id, pomelo.player.name, intervalTime);
+    } else {
+      setInterval(function() {
+        attackEvent();
+      }, intervalTime);
+      console.log('playerId = %d, fighter = %s, intervalTime = %d',
+        pomelo.player.id, pomelo.player.name, intervalTime);
+    }
     /*
     setInterval(function() {
       moveEvent();
     }, intervalTime);
     console.log('playerId = %d, mover = %s, intervalTime = %d',
       pomelo.player.id, pomelo.player.name, intervalTime);
-    */
     setInterval(function() {
       // console.log('%s : is running ... playerId = %d, fighter = %s, intervalTime = %d',
         // Date(), pomelo.player.id, pomelo.player.name, intervalTime);
@@ -549,6 +552,7 @@ var afterLogin = function(pomelo,data){
     }, intervalTime);
     console.log('playerId = %d, fighter = %s, intervalTime = %d',
       pomelo.player.id, pomelo.player.name, intervalTime);
+    */
   }
 
   var sendChat = function() {
