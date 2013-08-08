@@ -380,8 +380,8 @@ var envConfig = require('./../../app/config/env.json');
 var config = require('./../../app/config/'+envConfig.env+'/config');
 var mysql = require('mysql');
 
-var selfPlayer = null;
-var selfUid = null;
+pomelo.player = null;
+pomelo.uid = null;
 
 var client = mysql.createConnection({
   host: '10.120.144.102',
@@ -472,7 +472,7 @@ function entry(host, port, token, callback) {
 
 
 var afterLogin = function(pomelo,data){
-  selfPlayer = null;
+  pomelo.player = null;
   pomelo.players = {};
   pomelo.entities = {};
   pomelo.isDead = false;
@@ -500,12 +500,12 @@ var afterLogin = function(pomelo,data){
     if (player.id <= 0) { 
       console.log("用户不存在\n uid:" + uid + " code:" + data.code);
     } else {
-      selfUid = player.userId;
-      selfPlayer = player;
-      msgTempate.uid = selfUid;
-      msgTempate.playerId = selfPlayer.id;
-      msgTempate.from = selfPlayer.name,
-        msgTempate.areaId = selfPlayer.areaId;
+      pomelo.uid = player.userId;
+      pomelo.player = player;
+      msgTempate.uid = pomelo.uid;
+      msgTempate.playerId = pomelo.player.id;
+      msgTempate.from = pomelo.player.name,
+        msgTempate.areaId = pomelo.player.areaId;
       setTimeout(function(){
         enterScene();
       },1000);
@@ -515,7 +515,7 @@ var afterLogin = function(pomelo,data){
   login(data);
 
   var enterScene = function() {
-    var msg = {uid:selfUid, playerId: selfPlayer.id, areaId: selfPlayer.areaId};
+    var msg = {uid:pomelo.uid, playerId: pomelo.player.id, areaId: pomelo.player.areaId};
     monitor('monitorStart','enterScene');
     pomelo.request("area.playerHandler.enterScene",msg,enterSceneRes);
   }
@@ -523,16 +523,16 @@ var afterLogin = function(pomelo,data){
   var enterSceneRes = function(data) {
     monitor('monitorEnd', 'enterScene');
     pomelo.entities = data.entities;
-    selfPlayer = data.curPlayer;
+    pomelo.player = data.curPlayer;
     var moveRandom = Math.floor(Math.random()*3+1);
     var intervalTime = 2000 + Math.round(Math.random()*3000);
     /*
        if (moveRandom<=10) {
        setInterval(function(){moveEvent()},intervalTime);
-       console.log(' mover,name=' + selfPlayer.name + ' ' + selfPlayer.entityId);
+       console.log(' mover,name=' + pomelo.player.name + ' ' + pomelo.player.entityId);
        } else { 
        setInterval(function(){attackEvent()},intervalTime);
-       console.log(' fighter,name=' + selfPlayer.name + ' ' + selfPlayer.entityId);
+       console.log(' fighter,name=' + pomelo.player.name + ' ' + pomelo.player.entityId);
        }
     */
     /*
@@ -540,15 +540,15 @@ var afterLogin = function(pomelo,data){
       moveEvent();
     }, intervalTime);
     console.log('playerId = %d, mover = %s, intervalTime = %d',
-      selfPlayer.id, selfPlayer.name, intervalTime);
+      pomelo.player.id, pomelo.player.name, intervalTime);
     */
     setInterval(function() {
       // console.log('%s : is running ... playerId = %d, fighter = %s, intervalTime = %d',
-        // Date(), selfPlayer.id, selfPlayer.name, intervalTime);
+        // Date(), pomelo.player.id, pomelo.player.name, intervalTime);
       attackEvent();
     }, intervalTime);
     console.log('playerId = %d, fighter = %s, intervalTime = %d',
-      selfPlayer.id, selfPlayer.name, intervalTime);
+      pomelo.player.id, pomelo.player.name, intervalTime);
   }
 
   var sendChat = function() {
@@ -615,7 +615,7 @@ var afterLogin = function(pomelo,data){
     if (data.result.result === 2) {
       var attackId = parseInt(data.attacker);
       var targetId = parseInt(data.target);
-      var selfId = parseInt(selfPlayer.entityId);
+      var selfId = parseInt(pomelo.player.entityId);
       if (attackId === selfId || targetId === selfId) {
         if (targetId !== selfId){
           clearAttack();
@@ -636,7 +636,7 @@ var afterLogin = function(pomelo,data){
 
 
   pomelo.on('onRevive', function(data){
-    if (data.entityId === selfPlayer.entityId) {
+    if (data.entityId === pomelo.player.entityId) {
       pomelo.isDead = false;
       clearAttack();
     }
@@ -644,7 +644,7 @@ var afterLogin = function(pomelo,data){
 
 
   pomelo.on('onUpgrade' , function(data){
-    if (data.player.id===selfPlayer.id){   
+    if (data.player.id===pomelo.player.id){   
       msgTempate.content = 'NB的我升'+data.player.level+'级了，羡慕我吧';
       pomelo.level = data.player.level;    
       sendChat();
@@ -678,12 +678,12 @@ var afterLogin = function(pomelo,data){
         return;
       }
     }
-    if (data.entityId === selfPlayer.entityId) {
+    if (data.entityId === pomelo.player.entityId) {
       // console.log("2 ~ OnMove is running ...");
       var path = data.path[1];
-      selfPlayer.x = path.x;
-      selfPlayer.y = path.y;
-      // console.log('self %j move to x=%j, y=%j', selfUid, path.x, path.y);
+      pomelo.player.x = path.x;
+      pomelo.player.y = path.y;
+      // console.log('self %j move to x=%j, y=%j', pomelo.uid, path.x, path.y);
     }
     if (isPlayer) {
       pomelo.entities[EntityType.PLAYER][data.entityId] = entity;
@@ -695,9 +695,9 @@ var afterLogin = function(pomelo,data){
   var moveDirection = 1+Math.floor(Math.random()*7);
 
   var getPath = function() {
-    var FIX_SPACE = Math.round(Math.random()*selfPlayer.walkSpeed);
-    var startX = selfPlayer.x;
-    var startY = selfPlayer.y;
+    var FIX_SPACE = Math.round(Math.random()*pomelo.player.walkSpeed);
+    var startX = pomelo.player.x;
+    var startY = pomelo.player.y;
     var endX = startX;
     var endY = startY;
     switch(moveDirection) {
@@ -770,11 +770,11 @@ var afterLogin = function(pomelo,data){
     pomelo.request('area.playerHandler.move', msg, function(data) {
       monitor('monitorEnd', 'move');
       if (data.code !== 200) {
-        console.error('wrong path %j entityId = %j', msg, selfPlayer.entityId);
+        console.error('wrong path %j entityId = %j', msg, pomelo.player.entityId);
         return ++moveDirection;
       }
-      selfPlayer.x = paths[1].x;
-      selfPlayer.y = paths[1].y;
+      pomelo.player.x = paths[1].x;
+      pomelo.player.y = paths[1].y;
       if (moveDirection >= 8) {
         moveDirection = 1 + Math.floor(Math.random()*5);
       }
@@ -784,16 +784,16 @@ var afterLogin = function(pomelo,data){
   var attackEvent = function(){
     /*
      console.log('1 ~ %d~%s is attacking, in area %d, pos(%d, %d)',
-     selfPlayer.id, selfPlayer.name, selfPlayer.areaId,
-     selfPlayer.x, selfPlayer.y);
+     pomelo.player.id, pomelo.player.name, pomelo.player.areaId,
+     pomelo.player.x, pomelo.player.y);
      */
-    if (!selfPlayer.entityId || !!pomelo.isDead ) {
+    if (!pomelo.player.entityId || !!pomelo.isDead ) {
       return;
     }
     /*
      console.log('2 ~ %d~%s is attacking, in area %d, pos(%d, %d)',
-     selfPlayer.id, selfPlayer.name, selfPlayer.areaId,
-     selfPlayer.x, selfPlayer.y);
+     pomelo.player.id, pomelo.player.name, pomelo.player.areaId,
+     pomelo.player.x, pomelo.player.y);
      */
     var entity = pomelo.lastAttAck;
     if (!!entity) {
@@ -819,13 +819,13 @@ var afterLogin = function(pomelo,data){
       }
       pomelo.lastAttAck = entity;
       console.log('%s : %d~%s attack %d, in area %d, pos(%d, %d)',
-          Date(), selfPlayer.id, selfPlayer.name, entity.entityId,
-          selfPlayer.areaId, selfPlayer.x, selfPlayer.y);
+          Date(), pomelo.player.id, pomelo.player.name, entity.entityId,
+          pomelo.player.areaId, pomelo.player.x, pomelo.player.y);
       var attackId = entity.entityId;
       var skillId = 1;
       var route = 'area.fightHandler.attack';
-      var areaId = selfPlayer.areaId;
-      // var msg = { areaId: areaId, playerId: selfPlayer.id, targetId:attackId, skillId: skillId};
+      var areaId = pomelo.player.areaId;
+      // var msg = { areaId: areaId, playerId: pomelo.player.id, targetId:attackId, skillId: skillId};
       var msg = {targetId: attackId};
       monitor('incr', 'attackStart');
       monitor('start','attack', 100);
@@ -839,8 +839,8 @@ var afterLogin = function(pomelo,data){
     } else if (entity.type === 'item' || entity.type === 'equipment') {
       var route = 'area.playerHandler.pickItem';
       var attackId = entity.entityId;
-      // var msg = { areaId:selfPlayer.areaId, playerId:selfPlayer.id, targetId:attackId};
-      var msg = {areaId: selfPlayer.areaId, playerId: selfPlayer.id, targetId: attackId};
+      // var msg = { areaId:pomelo.player.areaId, playerId:pomelo.player.id, targetId:attackId};
+      var msg = {areaId: pomelo.player.areaId, playerId: pomelo.player.id, targetId: attackId};
       monitor('monitorStart', 'pickItem');
       /*
          pomelo.request(route,msg,function(data){
@@ -861,7 +861,7 @@ var afterLogin = function(pomelo,data){
     if (!item) {
       item = pomelo.entities[EntityType.EQUIPMENT][data.item];
     }
-    if (!!item && data.player === selfPlayer.entityId) {
+    if (!!item && data.player === pomelo.player.entityId) {
       msgTempate.content = '捡到一个XXOO的' + item.kindName + '玩意';
     }
     if (item) {
