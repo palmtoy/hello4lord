@@ -158,14 +158,21 @@ var afterLogin = function(pomelo,data){
        setInterval(function(){attackEvent()},intervalTime);
        console.log(' fighter,name=' + selfPlayer.name + ' ' + selfPlayer.entityId);
        }
-       */
+    */
+    setInterval(function() {
+      moveEvent();
+    }, intervalTime);
+    console.log('playerId = %d, mover = %s, intervalTime = %d',
+      selfPlayer.id, selfPlayer.name, intervalTime);
+    /*
     setInterval(function() {
       // console.log('%s : is running ... playerId = %d, fighter = %s, intervalTime = %d',
         // Date(), selfPlayer.id, selfPlayer.name, intervalTime);
-      attackEvent()
+      attackEvent();
     }, intervalTime);
     console.log('playerId = %d, fighter = %s, intervalTime = %d',
       selfPlayer.id, selfPlayer.name, intervalTime);
+    */
   }
 
   var sendChat = function() {
