@@ -788,7 +788,7 @@ var afterLogin = function(pomelo,data){
       }
       if (!moverStat.idDict[pomelo.player.id]) {
         moverStat.idDict[pomelo.player.id] = true;
-        ++moverStat.total;
+        moverStat.total++;
       }
       console.log('Total mover num = %j', moverStat.total);
       console.log('%s : %d~%s is moving, in area %d, pos(%d, %d)',
