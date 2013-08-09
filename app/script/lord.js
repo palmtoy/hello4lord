@@ -779,16 +779,17 @@ var afterLogin = function(pomelo,data){
         attackStat.idDict[pomelo.player.id] = true;
         attackStat.total++;
       }
+      console.log('\nTotal attacker num = %j', attackStat.total);
+
       areaStat.idDict[pomelo.player.areaId] = areaStat.idDict[pomelo.player.areaId] || {};
       var tmpDict = areaStat.idDict[pomelo.player.areaId];
       if (!tmpDict[pomelo.player.id]) {
-        tmpDict.idDict[pomelo.player.id] = true;
+        tmpDict[pomelo.player.id] = true;
         tmpDict.total = tmpDict.total || 0;
         tmpDict.total++;
       }
+      console.log('In area = %j, total attacker num = %j\n', pomelo.player.areaId, tmpDict.total);
 
-      console.log('In area = %j, total attacker num = %j', pomelo.player.areaId, tmpDict.total);
-      console.log('Total attacker num = %j', attackStat.total);
       console.log('%s : %d~%s attack %d, in area %d, pos(%d, %d)',
         Date(), pomelo.player.id, pomelo.player.name, entity.entityId,
         pomelo.player.areaId, pomelo.player.x, pomelo.player.y);
