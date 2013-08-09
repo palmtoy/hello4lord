@@ -9,6 +9,7 @@ var protobuf = require('pomelo-protobuf');
 var utils = require('./../../app/script/utils');
 var moveStat = require('./../../app/script/statistic').moveStat;
 var attackStat = require('./../../app/script/statistic').attackStat;
+var areaStat = require('./../../app/script/statistic').areaStat;
 
   if (typeof Object.create !== 'function') {
     Object.create = function (o) {
@@ -431,7 +432,7 @@ function queryEntry(uid, callback) {
     pomelo.request('gate.gateHandler.queryEntry', { uid: uid}, function(data) {
       pomelo.disconnect();
       if(data.code === 2001) {
-        alert('Servers error!');
+        console.log('Servers error!');
         return;
       }
       callback(data.host, data.port);
@@ -450,15 +451,15 @@ function entry(host, port, token, callback) {
       }
 
       if (data.code == 1001) {
-        alert('Login fail!');
+        console.log('Login fail!');
         return;
       } else if (data.code == 1003) {
-        alert('Username not exists!');
+        console.log('Username not exists!');
         return;
       }
 
       if (data.code != 200) {
-        alert('Login Fail!');
+        console.log('Login Fail!');
         return;
       }
 
@@ -778,6 +779,15 @@ var afterLogin = function(pomelo,data){
         attackStat.idDict[pomelo.player.id] = true;
         attackStat.total++;
       }
+      areaStat.idDict[pomelo.player.areaId] = areaStat.idDict[pomelo.player.areaId] || {};
+      var tmpDict = areaStat.idDict[pomelo.player.areaId];
+      if (!tmpDict[pomelo.player.id]) {
+        tmpDict.idDict[pomelo.player.id] = true;
+        tmpDict.total = tmpDict.total || 0;
+        tmpDict.total++;
+      }
+
+      console.log('In area = %j, total attacker num = %j', pomelo.player.areaId, tmpDict.total);
       console.log('Total attacker num = %j', attackStat.total);
       console.log('%s : %d~%s attack %d, in area %d, pos(%d, %d)',
         Date(), pomelo.player.id, pomelo.player.name, entity.entityId,
@@ -862,7 +872,7 @@ var afterLogin = function(pomelo,data){
 	 */
 	pomelo.removeEntity = function(id){
 		if(!pomelo.entities[id]) {
-			return true;
+			return false;
 		}
 
 		delete pomelo.entities[id];
