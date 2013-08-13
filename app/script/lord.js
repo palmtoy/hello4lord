@@ -401,6 +401,12 @@ var EntityType = {
   ITEM: 'item'
 };
 
+var ActFlagType = {
+  ENTRY: 0,
+  ATTACK: 1,
+  MOVE: 2
+};
+
 var monitor = function(){
   if (typeof actor !== 'undefined'){
     var args = Array.prototype.slice.call(arguments, 1);
@@ -440,14 +446,12 @@ function queryEntry(uid, callback) {
   });
 }
 
-var entryFlag = 0;
 function entry(host, port, token, callback) {
   // 初始化socketClient
   pomelo.init({host: host, port: port, log: true}, function() {
-    entryFlag++;
-    monitor('start', 'entry', entryFlag);
+    monitor('start', 'entry', ActFlagType.ENTRY);
     pomelo.request('connector.entryHandler.entry', {token: token}, function(data) {
-      monitor('end', 'entry', entryFlag);
+      monitor('end', 'entry', ActFlagType.ENTRY);
       if (callback) {
         callback(data.code);
       }
@@ -714,15 +718,13 @@ var afterLogin = function(pomelo,data){
 
   }
 
-  var moveFlag = 0;
   var moveEvent = function() {
     if (!!pomelo.isDead) {return;}
     var paths = getPath();
     var msg = {path: paths};
-    moveFlag++;
-    monitor('start', 'move', moveFlag);
+    monitor('start', 'move', ActFlagType.MOVE);
     pomelo.request('area.playerHandler.move', msg, function(data) {
-      monitor('end', 'move', moveFlag);
+      monitor('end', 'move', ActFlagType.MOVE);
       if (data.code !== RES_OK) {
         console.error('wrong path! %s %j : %d~%s, in area %d',
           Date(), msg, pomelo.player.id, pomelo.player.name, pomelo.player.areaId);
@@ -762,7 +764,6 @@ var afterLogin = function(pomelo,data){
     }
   };
 
-  var attackFlag = 0;
   var doAttack = function(entity) {
     if (!entity) {
       return;
@@ -778,11 +779,10 @@ var afterLogin = function(pomelo,data){
       var msg = {targetId: attackId};
       monitor('incr', 'attackStart');
 
-      attackFlag++;
-      monitor('start', 'attack', attackFlag);
+      monitor('start', 'attack', ActFlagType.ATTACK);
       // pomelo.notify(route, msg);
       pomelo.request(route, msg, function() {
-        monitor('end', 'attack', attackFlag);
+        monitor('end', 'attack', ActFlagType.ATTACK);
         console.log('\nTotal attacker num = %j', attackStat.total);
       });
 
