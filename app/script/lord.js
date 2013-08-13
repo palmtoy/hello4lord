@@ -429,7 +429,7 @@ queryHero(client, 1, offset, function(error, users){
 
 function queryEntry(uid, callback) {
   pomelo.init({host: '114.113.202.141', port: 3014, log: true}, function() {
-    pomelo.request('gate.gateHandler.queryEntry', { uid: uid}, function(data) {
+    pomelo.request('gate.gateHandler.queryEntry', {uid: uid}, function(data) {
       pomelo.disconnect();
       if(data.code === 2001) {
         console.log('Servers error!');
@@ -712,13 +712,15 @@ var afterLogin = function(pomelo,data){
 
   }
 
+  var moveFlag = 0;
   var moveEvent = function() {
     if (!!pomelo.isDead) {return;}
     var paths = getPath();
     var msg = {path: paths};
-    monitor('monitorStart', 'move');
+    moveFlag++;
+    monitor('start', 'move', moveFlag);
     pomelo.request('area.playerHandler.move', msg, function(data) {
-      monitor('monitorEnd', 'move');
+      monitor('end', 'move', moveFlag);
       if (data.code !== RES_OK) {
         console.error('wrong path! %s %j : %d~%s, in area %d',
           Date(), msg, pomelo.player.id, pomelo.player.name, pomelo.player.areaId);
@@ -758,6 +760,7 @@ var afterLogin = function(pomelo,data){
     }
   };
 
+  var attackFlag = 0;
   var doAttack = function(entity) {
     if (!entity) {
       return;
@@ -772,8 +775,13 @@ var afterLogin = function(pomelo,data){
       var route = 'area.fightHandler.attack';
       var msg = {targetId: attackId};
       monitor('incr', 'attackStart');
-      monitor('start','attack', 100);
-      pomelo.notify(route, msg);
+
+      attackFlag++;
+      monitor('start', 'attack', attackFlag);
+      // pomelo.notify(route, msg);
+      pomelo.request(route, msg, function() {
+        monitor('end', 'attack', attackFlag);
+      });
 
       if (!attackStat.idDict[pomelo.player.id]) {
         attackStat.idDict[pomelo.player.id] = true;
