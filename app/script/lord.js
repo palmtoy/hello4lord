@@ -440,12 +440,14 @@ function queryEntry(uid, callback) {
   });
 }
 
+var entryFlag = 0;
 function entry(host, port, token, callback) {
   // 初始化socketClient
   pomelo.init({host: host, port: port, log: true}, function() {
-    monitor('monitorStart','entry');
+    entryFlag++;
+    monitor('start', 'entry', entryFlag);
     pomelo.request('connector.entryHandler.entry', {token: token}, function(data) {
-      monitor('monitorEnd','entry');
+      monitor('end', 'entry', entryFlag);
       if (callback) {
         callback(data.code);
       }
@@ -781,13 +783,14 @@ var afterLogin = function(pomelo,data){
       // pomelo.notify(route, msg);
       pomelo.request(route, msg, function() {
         monitor('end', 'attack', attackFlag);
+        console.log('\nTotal attacker num = %j', attackStat.total);
       });
 
       if (!attackStat.idDict[pomelo.player.id]) {
         attackStat.idDict[pomelo.player.id] = true;
         attackStat.total++;
       }
-      console.log('\nTotal attacker num = %j', attackStat.total);
+      // console.log('\nTotal attacker num = %j', attackStat.total);
 
       areaStat.idDict[pomelo.player.areaId] = areaStat.idDict[pomelo.player.areaId] || {};
       var tmpDict = areaStat.idDict[pomelo.player.areaId];
