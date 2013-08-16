@@ -239,7 +239,6 @@ var handshake = function(data){
 
 var onData = function(data){
   //probuff decode
-  //var msg = Protocol.strdecode(data);
   var msg = Message.decode(data);
 
   if(msg.id > 0){
@@ -271,7 +270,7 @@ var processPackage = function(msg){
 var processMessage = function(pomelo, msg) {
   if(!msg || !msg.id) {
     // server push message
-    console.error('processMessage error!!!');
+    // console.error('processMessage error!!!');
     pomelo.emit(msg.route, msg.body);
     return;
   }
@@ -777,7 +776,7 @@ var afterLogin = function(pomelo,data){
       var attackId = entity.entityId;
       var route = 'area.fightHandler.attack';
       var msg = {targetId: attackId};
-      monitor('incr', 'attackStart');
+      // monitor('incr', 'attackStart');
 
       monitor(START, 'attack', ActFlagType.ATTACK);
       // pomelo.notify(route, msg);
