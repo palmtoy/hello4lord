@@ -1,5 +1,5 @@
 var envConfig = require('./app/config/env.json');
-var config = require('./app/config/'+envConfig.env+'/config');
+var config = require('./app/config/' + envConfig.env + '/config');
 var Robot = require('./lib/robot').Robot;
 var fs = require('fs');
 //
@@ -18,7 +18,7 @@ if (mode !== 'master' && mode !== 'client') {
 	throw new Error(' mode must be master or client');
 }
 
-if (mode==='master') {
+if (mode === 'master') {
     robot.runMaster(__filename);
 } else {
     var script = (process.cwd() + envConfig.script);
@@ -26,9 +26,9 @@ if (mode==='master') {
 }
 
 process.on('uncaughtException', function(err) {
-	console.error(' Caught exception: ' + err.stack);
+	// console.error(' Caught exception: ' + err.stack);
 	if (!!robot && !!robot.agent){
-		robot.agent.socket.emit('crash',err.stack);
+		robot.agent.socket.emit('crash', err.stack);
 	}
 	fs.appendFile('.log', err.stack, function (err) {});
 });
