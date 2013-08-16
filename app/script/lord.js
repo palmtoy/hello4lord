@@ -121,7 +121,7 @@ pomelo.disconnect = function() {
 };
 
 pomelo.request = function(route, msg, cb) {
-  msg = msg||{};
+  msg = msg || {};
   route = route || msg.route;
   if(!route) {
     console.log('fail to send request without route.');
@@ -136,6 +136,7 @@ pomelo.request = function(route, msg, cb) {
 };
 
 pomelo.notify = function(route, msg) {
+  msg = msg || {};
   sendMessage(0, route, msg);
 };
 
@@ -150,7 +151,6 @@ var sendMessage = function(reqId, route, msg) {
     msg = Protocol.strencode(JSON.stringify(msg));
   }
 
-
   var compressRoute = 0;
   if(pomelo.dict && pomelo.dict[route]){
     route = pomelo.dict[route];
@@ -162,6 +162,20 @@ var sendMessage = function(reqId, route, msg) {
   send(packet);
 };
 
+
+var _host = "";
+var _port = "";
+var _toke = "";
+
+var send = function(packet){
+   if (!!socket) {
+    socket.send(packet.buffer || packet,{binary: true, mask: true});
+   } else {
+    setTimeout(function() {
+      entry(_host, _port, _token, function() {console.log('Socket is null. ReEntry!')});
+    }, 3000);
+   }
+};
 var send = function(packet){
   socket.send(packet.buffer || packet,{binary: true, mask: true});
 };
@@ -255,12 +269,11 @@ var processPackage = function(msg){
 };
 
 var processMessage = function(pomelo, msg) {
-  if(!msg){
-    console.error('error');
-  }
-  if(!msg.id) {
+  if(!msg || !msg.id) {
     // server push message
+    console.error('processMessage error!!!');
     pomelo.emit(msg.route, msg.body);
+    return;
   }
 
   //if have a id then find the callback function with the request
@@ -282,7 +295,7 @@ var processMessageBatch = function(pomelo, msgs) {
 };
 
 var deCompose = function(msg){
-  var protos = !!pomelo.data.protos?pomelo.data.protos.server:{};
+  var protos = !!pomelo.data.protos ? pomelo.data.protos.server : {};
   var abbrs = pomelo.data.abbrs;
   var route = msg.route;
 
@@ -290,7 +303,7 @@ var deCompose = function(msg){
     //Decompose route from dict
     if(msg.compressRoute) {
       if(!abbrs[route]){
-        console.error('illigle msg!');
+        console.error('illegal msg!');
         return {};
       }
 
@@ -302,33 +315,10 @@ var deCompose = function(msg){
       return JSON.parse(Protocol.strdecode(msg.body));
     }
   } catch(ex) {
-    console.error('route  ,body ' +  route + " " + msg.body);
+    console.error('route, body = ' + route + ", " + msg.body);
   }
+
   return msg;
-};
-
-var setDict = function(dict) {
-  if(!dict){
-    return;
-  }
-
-  pomelo.dict = dict;
-  pomelo.abbrs = {};
-
-  for(var route in dict){
-    pomelo.abbrs[dict[route]] = route;
-  }
-};
-
-var initProtos = function(protos){
-  if(!protos){return;}
-
-  pomelo.protos = {
-    server : protos.server || {},
-    client : protos.client || {}
-  },
-
-    protobuf.init({encoderProtos: protos.client, decoderProtos: protos.server});
 };
 
 var handshakeInit = function(data){
@@ -348,7 +338,10 @@ var handshakeInit = function(data){
 };
 
 //Initilize data used in pomelo client
-var initData = function(data){
+var initData = function(data) {
+  if(!data || !data.sys) {
+    return;
+  }
   pomelo.data = pomelo.data || {};
   var dict = data.sys.dict;
   var protos = data.sys.protos;
@@ -393,6 +386,9 @@ var client = mysql.createConnection({
   database: 'Pomelo'
 });
 
+var START = 'start';
+var END = 'end';
+
 var EntityType = {
   PLAYER: 'player',
   NPC: 'npc',
@@ -403,14 +399,15 @@ var EntityType = {
 
 var ActFlagType = {
   ENTRY: 0,
-  ATTACK: 1,
-  MOVE: 2
+  ENTER_SCENE: 1,
+  ATTACK: 2,
+  MOVE: 3,
+  PICK_ITEM: 4
 };
 
-var monitor = function(){
+var monitor = function(type, name, reqId) {
   if (typeof actor !== 'undefined'){
-    var args = Array.prototype.slice.call(arguments, 1);
-    actor.emit(arguments[0], args, actor.id);
+    actor.emit(type, name, reqId);
   } else {
     console.error(Array.prototype.slice.call(arguments, 0));
   }
@@ -418,7 +415,7 @@ var monitor = function(){
 
 var connected = false;
 
-var offset = typeof actor!='undefined' ? actor.id : 0;
+var offset = (typeof actor !== 'undefined') ? actor.id : 1;
 
 if (typeof actor !== 'undefined'){
   console.log(offset + ' ' + actor.id);
@@ -426,10 +423,11 @@ if (typeof actor !== 'undefined'){
 
 queryHero(client, 1, offset, function(error, users){
   var user = users[0];
-  queryEntry('1', function(host, port){
-    entry(host, port, user.token, function(){
+  client.end();
+  queryEntry(user.uid, function(host, port) {
+    entry(host, port, user.token, function() {
       connected = true;
-    })
+    });
   });
 });
 
@@ -447,11 +445,17 @@ function queryEntry(uid, callback) {
 }
 
 function entry(host, port, token, callback) {
+  _host = host;
+  _port = port;
+  _token = token;
+  if (!!socket) {
+    return;
+  }
   // 初始化socketClient
   pomelo.init({host: host, port: port, log: true}, function() {
-    monitor('start', 'entry', ActFlagType.ENTRY);
+    monitor(START, 'entry', ActFlagType.ENTRY);
     pomelo.request('connector.entryHandler.entry', {token: token}, function(data) {
-      monitor('end', 'entry', ActFlagType.ENTRY);
+      monitor(END, 'entry', ActFlagType.ENTRY);
       if (callback) {
         callback(data.code);
       }
@@ -473,7 +477,6 @@ function entry(host, port, token, callback) {
     });
   });
 }
-
 
 var afterLogin = function(pomelo,data){
   pomelo.player = null;
@@ -516,14 +519,14 @@ var afterLogin = function(pomelo,data){
 
   var enterScene = function() {
     var msg = {uid: pomelo.uid, playerId: pomelo.player.id, areaId: pomelo.player.areaId};
-    monitor('monitorStart', 'enterScene');
+    monitor(START, 'enterScene', ActFlagType.ENTER_SCENE);
     pomelo.request("area.playerHandler.enterScene", msg, enterSceneRes);
     console.log('1 ~ EnterScene ~ areaId = %d, playerId = %d, name = %s',
       pomelo.player.areaId, pomelo.player.id, pomelo.player.name);
   }
 
   var enterSceneRes = function(data) {
-    monitor('monitorEnd', 'enterScene');
+    monitor(END, 'enterScene', ActFlagType.ENTER_SCENE);
     // console.log('data.entities = %j', data.entities)
     pomelo.player = data.curPlayer;
     pomelo.addEntity(pomelo.player);
@@ -539,10 +542,10 @@ var afterLogin = function(pomelo,data){
       }
     }
 
-    var moveRandom = Math.floor(Math.random()*2 + 1);
+    var actRandom = Math.floor(Math.random()*2 + 1);
     var intervalTime = Math.floor(Math.random()*3000 + 2000);
     /*
-     if (moveRandom === 1) {
+     if (actRandom === 1) {
      setInterval(function() {
      moveEvent();
      }, intervalTime);
@@ -625,11 +628,8 @@ var afterLogin = function(pomelo,data){
   });
 
   pomelo.on('onUpgrade' , function(data){
-    if (data.player.id===pomelo.player.id){
-      msgTempate.content = '恭喜升到' + data.player.level + '级!';
-      pomelo.level = data.player.level;
-      sendChat();
-    }
+    msgTempate.content = 'Upgrade to ' + data.player.level + '!';
+    sendChat();
   });
 
   pomelo.on('onDropItems', function(data) {
@@ -722,9 +722,9 @@ var afterLogin = function(pomelo,data){
     if (!!pomelo.isDead) {return;}
     var paths = getPath();
     var msg = {path: paths};
-    monitor('start', 'move', ActFlagType.MOVE);
+    monitor(START, 'move', ActFlagType.MOVE);
     pomelo.request('area.playerHandler.move', msg, function(data) {
-      monitor('end', 'move', ActFlagType.MOVE);
+      monitor(END, 'move', ActFlagType.MOVE);
       if (data.code !== RES_OK) {
         console.error('wrong path! %s %j : %d~%s, in area %d',
           Date(), msg, pomelo.player.id, pomelo.player.name, pomelo.player.areaId);
@@ -779,10 +779,10 @@ var afterLogin = function(pomelo,data){
       var msg = {targetId: attackId};
       monitor('incr', 'attackStart');
 
-      monitor('start', 'attack', ActFlagType.ATTACK);
+      monitor(START, 'attack', ActFlagType.ATTACK);
       // pomelo.notify(route, msg);
       pomelo.request(route, msg, function() {
-        monitor('end', 'attack', ActFlagType.ATTACK);
+        monitor(END, 'attack', ActFlagType.ATTACK);
         console.log('\nTotal attacker num = %j', attackStat.total);
       });
 
@@ -809,14 +809,29 @@ var afterLogin = function(pomelo,data){
       var attackId = entity.entityId;
       // var msg = { areaId:pomelo.player.areaId, playerId:pomelo.player.id, targetId:attackId};
       var msg = {areaId: pomelo.player.areaId, playerId: pomelo.player.id, targetId: attackId};
-      monitor('monitorStart', 'pickItem');
-      pomelo.notify(route, msg);
+      monitor(START, 'pickItem', ActFlagType.PICK_ITEM);
+      pomelo.request(route, msg, function() {
+        monitor(END, 'pickItem', ActFlagType.PICK_ITEM);
+      });
     }
   }
 
   pomelo.on('onPickItem', function(data) {
     clearAttack();
     this.removeEntity(data.item);
+    var item = pomelo.entities[data.item];
+    if (!!item && data.player === pomelo.player.entityId) {
+      msgTempate.content = 'I got a ' + item.kindName;
+      sendChat(msgTempate);
+    }
+    if (item) {
+      delete item;
+    }
+  });
+
+  pomelo.on('onRemoveItem', function(data){
+    clearAttack();
+    delete pomelo.entities[data.entityId];
   });
 
   ///////////////////////////////////////////////////////////////////
@@ -825,6 +840,10 @@ var afterLogin = function(pomelo,data){
     for(var key in entities) {
       var array = entities[key];
       for(var i = 0; i < array.length; i++) {
+        var entity = array[i];
+        entity.type = key;
+        this.addEntity(entity);
+        /*
         if(!this.getEntity(array[i].entityId)) {
           var entity = array[i];
           entity.type = key;
@@ -832,6 +851,7 @@ var afterLogin = function(pomelo,data){
         }else{
           console.warn('add exist entity!');
         }
+        */
       }
     }
   });
