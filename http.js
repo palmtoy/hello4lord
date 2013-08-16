@@ -52,8 +52,10 @@ var startHttp = function() {
 }
 
 process.on('uncaughtException', function(err) {
-  // console.error(' Caught exception: ' + err.stack);
+  /*
+  console.error(' Caught exception: ' + err.stack);
   require('fs').writeFileSync('/tmp/log',err.stack,'utf8');
+  */
 });
 
 if (cluster.isMaster) {

@@ -26,9 +26,11 @@ if (mode === 'master') {
 }
 
 process.on('uncaughtException', function(err) {
-	// console.error(' Caught exception: ' + err.stack);
+  /*
+	console.error(' Caught exception: ' + err.stack);
 	if (!!robot && !!robot.agent){
 		robot.agent.socket.emit('crash', err.stack);
 	}
 	fs.appendFile('.log', err.stack, function (err) {});
+	*/
 });
