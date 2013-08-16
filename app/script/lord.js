@@ -776,7 +776,7 @@ var afterLogin = function(pomelo,data){
       var attackId = entity.entityId;
       var route = 'area.fightHandler.attack';
       var msg = {targetId: attackId};
-      // monitor('incr', 'attackStart');
+      monitor('incr', 'attackStart');
 
       monitor(START, 'attack', ActFlagType.ATTACK);
       // pomelo.notify(route, msg);
