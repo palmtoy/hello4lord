@@ -739,6 +739,16 @@ var afterLogin = function(pomelo,data){
         moveStat.total++;
       }
       console.log('Total mover num = %j', moveStat.total);
+
+      areaStat.idDict[pomelo.player.areaId] = areaStat.idDict[pomelo.player.areaId] || {};
+      var tmpDict = areaStat.idDict[pomelo.player.areaId];
+      if (!tmpDict[pomelo.player.id]) {
+        tmpDict[pomelo.player.id] = true;
+        tmpDict.total = tmpDict.total || 0;
+        tmpDict.total++;
+      }
+      console.log('In area = %j, total mover num = %j\n', pomelo.player.areaId, tmpDict.total);
+
       console.log('%s : %d~%s is moving, in area %d, pos(%d, %d)',
         Date(), pomelo.player.id, pomelo.player.name,
         pomelo.player.areaId, pomelo.player.x, pomelo.player.y);
