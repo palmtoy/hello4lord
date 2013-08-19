@@ -387,6 +387,7 @@ var client = mysql.createConnection({
 
 var START = 'start';
 var END = 'end';
+var DirectionNum = 8;
 
 var EntityType = {
   PLAYER: 'player',
@@ -653,7 +654,7 @@ var afterLogin = function(pomelo,data){
     }
   });
 
-  var moveDirection = Math.floor(Math.random()*8 + 1);
+  var moveDirection = Math.floor(Math.random() * DirectionNum + 1);
 
   var getPath = function() {
     var FIX_SPACE = Math.floor(Math.random() * pomelo.player.walkSpeed + 1);
@@ -661,6 +662,7 @@ var afterLogin = function(pomelo,data){
     var startY = pomelo.player.y;
     var endX = startX;
     var endY = startY;
+    moveDirection = (++moveDirection % DirectionNum) ? moveDirection : 1;
     switch(moveDirection) {
       case 1:
         endX += FIX_SPACE;
@@ -686,7 +688,7 @@ var afterLogin = function(pomelo,data){
       case 7:
         endY -= FIX_SPACE;
         break;
-      case 8:
+      case DirectionNum:
       default:
         endX += FIX_SPACE;
         endY -= FIX_SPACE;
@@ -727,7 +729,6 @@ var afterLogin = function(pomelo,data){
       if (data.code !== RES_OK) {
         console.error('wrong path! %s %j : %d~%s, in area %d',
           Date(), msg, pomelo.player.id, pomelo.player.name, pomelo.player.areaId);
-        moveDirection = Math.floor(Math.random()*8 + 1);
         return;
       }
       pomelo.player.x = paths[1].x;
