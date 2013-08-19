@@ -557,19 +557,19 @@ var afterLogin = function(pomelo,data){
      console.log('playerId = %d, fighter = %s, intervalTime = %d',
      pomelo.player.id, pomelo.player.name, intervalTime);
      }
-     */
+    */
+    setInterval(function() {
+      moveEvent();
+    }, intervalTime);
+    console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, mover = %s, intervalTime = %d',
+      pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
     /*
-     setInterval(function() {
-     moveEvent();
-     }, intervalTime);
-     console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, mover = %s, intervalTime = %d',
-     pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
-     */
     setInterval(function() {
       attackEvent();
     }, intervalTime);
     console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, fighter = %s, intervalTime = %d',
       pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
+    */
   }
 
   var sendChat = function() {
