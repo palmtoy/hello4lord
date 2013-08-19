@@ -653,7 +653,7 @@ var afterLogin = function(pomelo,data){
     }
   });
 
-  var moveDirection = Math.floor(Math.random()*7 + 1);
+  var moveDirection = Math.floor(Math.random()*8 + 1);
 
   var getPath = function() {
     var FIX_SPACE = Math.floor(Math.random() * pomelo.player.walkSpeed + 1);
@@ -683,10 +683,10 @@ var afterLogin = function(pomelo,data){
         endX -= FIX_SPACE;
         endY -= FIX_SPACE;
         break;
-      case 7 :
-        endX -= FIX_SPACE;
+      case 7:
+        endY -= FIX_SPACE;
         break;
-      case 8 :
+      case 8:
       default:
         endX += FIX_SPACE;
         endY -= FIX_SPACE;
@@ -727,13 +727,12 @@ var afterLogin = function(pomelo,data){
       if (data.code !== RES_OK) {
         console.error('wrong path! %s %j : %d~%s, in area %d',
           Date(), msg, pomelo.player.id, pomelo.player.name, pomelo.player.areaId);
-        return ++moveDirection;
+        moveDirection = Math.floor(Math.random()*8 + 1);
+        return;
       }
       pomelo.player.x = paths[1].x;
       pomelo.player.y = paths[1].y;
-      if (moveDirection >= 8) {
-        moveDirection = Math.floor(Math.random()*5 + 1);
-      }
+
       if (!moveStat.idDict[pomelo.player.id]) {
         moveStat.idDict[pomelo.player.id] = true;
         moveStat.total++;
