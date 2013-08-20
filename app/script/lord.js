@@ -544,27 +544,25 @@ var afterLogin = function(pomelo,data){
 
     var actRandom = Math.floor(Math.random()*2 + 1);
     var intervalTime = Math.floor(Math.random()*3000 + 2000);
+    if (actRandom === 1) {
+      setInterval(function() {
+        moveEvent();
+      }, intervalTime);
+      console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, mover = %s, intervalTime = %d',
+        pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
+    } else {
+      setInterval(function() {
+        attackEvent();
+      }, intervalTime);
+      console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, fighter = %s, intervalTime = %d',
+        pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
+    }
     /*
-     if (actRandom === 1) {
-     setInterval(function() {
-     moveEvent();
-     }, intervalTime);
-     console.log('playerId = %d, mover = %s, intervalTime = %d',
-     pomelo.player.id, pomelo.player.name, intervalTime);
-     } else {
-     setInterval(function() {
-     attackEvent();
-     }, intervalTime);
-     console.log('playerId = %d, fighter = %s, intervalTime = %d',
-     pomelo.player.id, pomelo.player.name, intervalTime);
-     }
-    */
     setInterval(function() {
       moveEvent();
     }, intervalTime);
     console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, mover = %s, intervalTime = %d',
       pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
-    /*
     setInterval(function() {
       attackEvent();
     }, intervalTime);
