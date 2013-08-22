@@ -544,6 +544,7 @@ var afterLogin = function(pomelo,data){
 
     var actRandom = Math.floor(Math.random()*2 + 1);
     var intervalTime = Math.floor(Math.random()*3000 + 2000);
+    /*
     if (actRandom === 1) {
       setInterval(function() {
         moveEvent();
@@ -557,18 +558,19 @@ var afterLogin = function(pomelo,data){
       console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, fighter = %s, intervalTime = %d',
         pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
     }
+    */
     /*
     setInterval(function() {
       moveEvent();
     }, intervalTime);
     console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, mover = %s, intervalTime = %d',
       pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
+    */
     setInterval(function() {
       attackEvent();
     }, intervalTime);
     console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, fighter = %s, intervalTime = %d',
       pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
-    */
   }
 
   var sendChat = function() {
@@ -721,6 +723,7 @@ var afterLogin = function(pomelo,data){
     if (!!pomelo.isDead) {return;}
     var paths = getPath();
     var msg = {path: paths};
+    monitor('incr', 'moveReq');
     monitor(START, 'move', ActFlagType.MOVE);
     pomelo.request('area.playerHandler.move', msg, function(data) {
       monitor(END, 'move', ActFlagType.MOVE);
@@ -784,8 +787,7 @@ var afterLogin = function(pomelo,data){
       var attackId = entity.entityId;
       var route = 'area.fightHandler.attack';
       var msg = {targetId: attackId};
-      monitor('incr', 'attackStart');
-
+      monitor('incr', 'attackReq');
       monitor(START, 'attack', ActFlagType.ATTACK);
       // pomelo.notify(route, msg);
       pomelo.request(route, msg, function() {
