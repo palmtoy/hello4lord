@@ -517,7 +517,7 @@ var afterLogin = function(pomelo,data){
       msgTempate.areaId = pomelo.player.areaId;
       setTimeout(function(){
         enterScene();
-      }, 1000);
+      }, 0);
     }
   };
 
