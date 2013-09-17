@@ -163,10 +163,11 @@ var sendMessage = function(reqId, route, msg) {
 };
 
 
-var _host = "";
-var _port = "";
-var _toke = "";
+var _host = ""
+  , _port = ""
+  , _token = "";
 
+/*
 var send = function(packet){
    if (!!socket) {
     socket.send(packet.buffer || packet,{binary: true, mask: true});
@@ -176,8 +177,12 @@ var send = function(packet){
     }, 3000);
    }
 };
+*/
+
 var send = function(packet){
-  socket.send(packet.buffer || packet,{binary: true, mask: true});
+  if (!!socket) {
+    socket.send(packet.buffer || packet, {binary: true, mask: true});
+  }
 };
 
 
@@ -424,6 +429,7 @@ if (typeof actor !== 'undefined'){
 queryHero(client, 1, offset, function(error, users){
   var user = users[0];
   client.end();
+  monitor(START, 'enterScene', ActFlagType.ENTER_SCENE);
   queryEntry(user.uid, function(host, port) {
     entry(host, port, user.token, function() {
       connected = true;
@@ -453,9 +459,9 @@ function entry(host, port, token, callback) {
   }
   // 初始化socketClient
   pomelo.init({host: host, port: port, log: true}, function() {
-    monitor(START, 'entry', ActFlagType.ENTRY);
+    // monitor(START, 'entry', ActFlagType.ENTRY);
     pomelo.request('connector.entryHandler.entry', {token: token}, function(data) {
-      monitor(END, 'entry', ActFlagType.ENTRY);
+      // monitor(END, 'entry', ActFlagType.ENTRY);
       if (callback) {
         callback(data.code);
       }
@@ -509,9 +515,7 @@ var afterLogin = function(pomelo,data){
       msgTempate.playerId = pomelo.player.id;
       msgTempate.from = pomelo.player.name;
       msgTempate.areaId = pomelo.player.areaId;
-      setTimeout(function(){
-        enterScene();
-      }, 1000);
+      enterScene();
     }
   };
 
@@ -519,7 +523,7 @@ var afterLogin = function(pomelo,data){
 
   var enterScene = function() {
     var msg = {uid: pomelo.uid, playerId: pomelo.player.id, areaId: pomelo.player.areaId};
-    monitor(START, 'enterScene', ActFlagType.ENTER_SCENE);
+    // monitor(START, 'enterScene', ActFlagType.ENTER_SCENE);
     pomelo.request("area.playerHandler.enterScene", msg, enterSceneRes);
     console.log('1 ~ EnterScene ~ areaId = %d, playerId = %d, name = %s',
       pomelo.player.areaId, pomelo.player.id, pomelo.player.name);
@@ -541,6 +545,7 @@ var afterLogin = function(pomelo,data){
       }
     }
 
+    /*
     var actRandom = Math.floor(Math.random()*2 + 1);
     var intervalTime = Math.floor(Math.random()*3000 + 2000);
     if (actRandom === 1) {
@@ -556,6 +561,7 @@ var afterLogin = function(pomelo,data){
       console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, fighter = %s, intervalTime = %d',
         pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
     }
+    */
 
     /*
     setInterval(function() {
