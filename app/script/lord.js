@@ -527,7 +527,6 @@ var afterLogin = function(pomelo,data){
 
   var enterSceneRes = function(data) {
     monitor(END, 'enterScene', ActFlagType.ENTER_SCENE);
-    // console.log('data.entities = %j', data.entities)
     pomelo.player = data.curPlayer;
     pomelo.addEntity(pomelo.player);
 
@@ -544,7 +543,6 @@ var afterLogin = function(pomelo,data){
 
     var actRandom = Math.floor(Math.random()*2 + 1);
     var intervalTime = Math.floor(Math.random()*3000 + 2000);
-    /*
     if (actRandom === 1) {
       setInterval(function() {
         moveEvent();
@@ -558,19 +556,19 @@ var afterLogin = function(pomelo,data){
       console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, fighter = %s, intervalTime = %d',
         pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
     }
-    */
+
     /*
     setInterval(function() {
       moveEvent();
     }, intervalTime);
     console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, mover = %s, intervalTime = %d',
       pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
-    */
     setInterval(function() {
       attackEvent();
     }, intervalTime);
     console.log('2 ~ EnterSceneRes ~ areaId = %d, playerId = %d, fighter = %s, intervalTime = %d',
       pomelo.player.areaId, pomelo.player.id, pomelo.player.name, intervalTime);
+    */
   }
 
   var sendChat = function() {
@@ -754,7 +752,7 @@ var afterLogin = function(pomelo,data){
         Date(), pomelo.player.id, pomelo.player.name,
         pomelo.player.areaId, pomelo.player.x, pomelo.player.y);
     });
-  }
+  };
 
   var attackEvent = function(){
     if (!pomelo.player.entityId || !!pomelo.isDead ) {
