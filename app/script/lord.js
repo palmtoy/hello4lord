@@ -383,7 +383,10 @@ pomelo.player = null;
 pomelo.uid = null;
 
 var client = mysql.createConnection({
-  host: '10.120.144.102',
+  // temporary code
+  // host: '10.120.144.102',
+  host: '127.0.0.1',
+  // temporary code
   user: 'xy',
   port: 3306,
   password: 'dev',
@@ -426,10 +429,16 @@ if (typeof actor !== 'undefined'){
   console.log(offset + ' ' + actor.id);
 }
 
-queryHero(client, 1, offset, function(error, users){
+// temporary code
+// queryHero(client, 1, offset, function(error, users){
+queryHero(client, 1, 0, function(error, users){
+// temporary code
+  console.log('QueryHero ~ offset = ', offset);
   var user = users[0];
   client.end();
-  monitor(START, 'enterScene', ActFlagType.ENTER_SCENE);
+  // monitor(START, 'enterScene', ActFlagType.ENTER_SCENE);
+  console.log('QueryHero is running ...');
+  console.log('QueryHero ~ user = ', JSON.stringify(user));
   queryEntry(user.uid, function(host, port) {
     entry(host, port, user.token, function() {
       connected = true;
@@ -438,8 +447,12 @@ queryHero(client, 1, offset, function(error, users){
 });
 
 function queryEntry(uid, callback) {
-  pomelo.init({host: '114.113.202.141', port: 3014, log: true}, function() {
+  // temporary code
+  // pomelo.init({host: '114.113.202.141', port: 3014, log: true}, function() {
+  pomelo.init({host: '127.0.0.1', port: 3014, log: true}, function() {
+  // temporary code
     pomelo.request('gate.gateHandler.queryEntry', {uid: uid}, function(data) {
+      console.log('QueryEntry is running ...');
       pomelo.disconnect();
       if(data.code === 2001) {
         console.log('Servers error!');
@@ -532,7 +545,7 @@ var afterLogin = function(pomelo,data){
   }
 
   var enterSceneRes = function(data) {
-    monitor(END, 'enterScene', ActFlagType.ENTER_SCENE);
+    // monitor(END, 'enterScene', ActFlagType.ENTER_SCENE);
     pomelo.player = data.curPlayer;
     pomelo.addEntity(pomelo.player);
 
@@ -546,6 +559,11 @@ var afterLogin = function(pomelo,data){
         }
       }
     }
+
+    // create instance testing
+    pomelo.request("area.playerHandler.createInstance", {cnt: 10}, function(args) {
+      console.log('CreateInstance ~ args = ', JSON.stringify(args));
+    });
 
     /*
     var actRandom = Math.floor(Math.random()*2 + 1);
