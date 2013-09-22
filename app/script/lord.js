@@ -566,7 +566,7 @@ var afterLogin = function(pomelo,data){
     start = new Date().getTime();
     console.log('\n\n' + 'start = ', start);
     // create instance testing
-    var cnt = 100;
+    var cnt = 150;
     pomelo.request("area.playerHandler.createInstance", {cnt: cnt}, function(args) {
       end = new Date().getTime();
       console.log('end = ', end);
