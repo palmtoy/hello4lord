@@ -385,8 +385,8 @@ pomelo.uid = null;
 
 var client = mysql.createConnection({
   // temporary code
-  // host: '10.120.144.102',
-  host: '127.0.0.1',
+  host: '10.120.144.102',
+  // host: '127.0.0.1',
   // temporary code
   user: 'xy',
   port: 3306,
@@ -431,8 +431,8 @@ if (typeof actor !== 'undefined'){
 }
 
 // temporary code
-// queryHero(client, 1, offset, function(error, users){
-queryHero(client, 1, 0, function(error, users){
+queryHero(client, 1, offset, function(error, users){
+// queryHero(client, 1, 0, function(error, users){
 // temporary code
   console.log('QueryHero ~ offset = ', offset);
   var user = users[0];
@@ -449,8 +449,8 @@ queryHero(client, 1, 0, function(error, users){
 
 function queryEntry(uid, callback) {
   // temporary code
-  // pomelo.init({host: '114.113.202.141', port: 3014, log: true}, function() {
-  pomelo.init({host: '127.0.0.1', port: 3014, log: true}, function() {
+  pomelo.init({host: '114.113.202.141', port: 3014, log: true}, function() {
+  // pomelo.init({host: '127.0.0.1', port: 3014, log: true}, function() {
   // temporary code
     pomelo.request('gate.gateHandler.queryEntry', {uid: uid}, function(data) {
       console.log('QueryEntry is running ...');
