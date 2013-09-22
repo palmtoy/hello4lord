@@ -10,6 +10,7 @@ var utils = require('./../../app/script/utils');
 var moveStat = require('./../../app/script/statistic').moveStat;
 var attackStat = require('./../../app/script/statistic').attackStat;
 var areaStat = require('./../../app/script/statistic').areaStat;
+var util = require('util');
 
 if (typeof Object.create !== 'function') {
   Object.create = function (o) {
@@ -560,9 +561,20 @@ var afterLogin = function(pomelo,data){
       }
     }
 
+    var start = 0
+      , end = 0;
+    start = new Date().getTime();
+    console.log('\n\n' + 'start = ', start);
     // create instance testing
-    pomelo.request("area.playerHandler.createInstance", {cnt: 10}, function(args) {
+    var cnt = 100;
+    pomelo.request("area.playerHandler.createInstance", {cnt: cnt}, function(args) {
+      end = new Date().getTime();
+      console.log('end = ', end);
       console.log('CreateInstance ~ args = ', JSON.stringify(args));
+      // 計算花多久時間
+      var tmpStr = util.format('CreateInstance(cnt=%j) cost time : %j sec\n\n', cnt, (end - start)/1000)
+      console.log(tmpStr);
+      process.exit(0);
     });
 
     /*
