@@ -21,7 +21,7 @@ pomelo.init = function(params, cb) {
   sock = io.connect(url, {'force new connection': true, reconnect: false});
 
   sock.on('connect', function(){
-    console.log('[pomelo.init] websocket connected!');
+    // console.log(actor.id + ' connected ~');
     if (cb) {
       cb(sock);
     }
@@ -47,6 +47,7 @@ pomelo.init = function(params, cb) {
   });
 
   sock.on('disconnect', function(reason) {
+    console.log(actor.id + ' disconnect ...');
     pomelo.emit('disconnect', reason);
   });
 };
@@ -141,10 +142,7 @@ function filter(msg,route){
 function queryEntry(uid, callback) {
   var route = 'gate.gateHandler.queryEntry';
   pomelo.init({
-    // testing code
-    // host: 'pomelo17.server.163.org',
     host: '127.0.0.1',
-    // testing code
     port: 3014,
     log: true
   }, function() {
@@ -161,10 +159,8 @@ function queryEntry(uid, callback) {
   });
 };
 
-// testing code
 var username = 'user_';
 username += actor.id;
-// testing code
 
 var rid = 'xx';
 
