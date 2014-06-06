@@ -1,0 +1,227 @@
+var EventEmitter = require('events').EventEmitter;
+var io = require('socket.io-client');
+
+var HEADER = 5;
+
+var bt2Str = function(byteArray,start,end) {
+    var result = "";
+    for(var i = start; i < byteArray.length && i<end; i++) {
+        result = result + String.fromCharCode(byteArray[i]);
+    };
+    return result;
+}
+
+var Protocol = {};
+Protocol.encode = function(id,route,msg){
+    var msgStr = JSON.stringify(msg);
+    if (route.length>255) { throw new Error('route maxlength is overflow'); }
+    var byteArray = new Uint16Array(HEADER + route.length + msgStr.length);
+    var index = 0;
+    byteArray[index++] = (id>>24) & 0xFF;
+    byteArray[index++] = (id>>16) & 0xFF;
+    byteArray[index++] = (id>>8) & 0xFF;
+    byteArray[index++] = id & 0xFF;
+    byteArray[index++] = route.length & 0xFF;
+    for(var i = 0;i<route.length;i++){
+        byteArray[index++] = route.charCodeAt(i);
+    }
+    for (var i = 0; i < msgStr.length; i++) {
+        byteArray[index++] = msgStr.charCodeAt(i);
+    }
+    return bt2Str(byteArray,0,byteArray.length);
+};
+
+var socket = null;
+var id = 1;
+var callbacks = {};
+
+var pomelo = Object.create(EventEmitter.prototype);
+pomelo.init = function(params, cb) {
+  pomelo.params = params;
+  params.debug = true;
+  var host = params.host;
+  var port = params.port;
+
+  var url = 'ws://' + host;
+  if(port) {
+    url +=  ':' + port;
+  }
+
+  socket = io.connect(url, {'force new connection': true, reconnect: false});
+
+  socket.on('connect', function(){
+    console.log('[pomelo.init] websocket connected!');
+    if (cb) {
+      cb(socket);
+    }
+  });
+
+  socket.on('reconnect', function() {
+    console.log('reconnect');
+  });
+
+  socket.on('message', function(data){
+    if(typeof data === 'string') {
+      data = JSON.parse(data);
+    }
+    if(data instanceof Array) {
+      processMessageBatch(pomelo, data);
+    } else {
+      processMessage(pomelo, data);
+    }
+  });
+
+  socket.on('error', function(err) {
+    console.log(err);
+  });
+
+  socket.on('disconnect', function(reason) {
+    pomelo.emit('disconnect', reason);
+  });
+};
+
+pomelo.disconnect = function() {
+  if(socket) {
+    socket.disconnect();
+    socket = null;
+  }
+};
+
+pomelo.request = function(route) {
+  if(!route) {
+    return;
+  }
+  var msg = {};
+  var cb;
+  arguments = Array.prototype.slice.apply(arguments);
+  if(arguments.length === 2){
+    if(typeof arguments[1] === 'function'){
+      cb = arguments[1];
+    }else if(typeof arguments[1] === 'object'){
+      msg = arguments[1];
+    }
+  }else if(arguments.length === 3){
+    msg = arguments[1];
+    cb = arguments[2];
+  }
+  msg = filter(msg,route);
+  id++; 
+  callbacks[id] = cb;
+  var sg = Protocol.encode(id,route,msg);
+  socket.send(sg);
+};
+
+pomelo.notify = function(route,msg) {
+  this.request(route, msg);
+};
+
+var processMessage = function(pomelo, msg) {
+  var route;
+  if(msg.id) {
+    //if have a id then find the callback function with the request
+    var cb = callbacks[msg.id];
+
+    delete callbacks[msg.id];
+    if(typeof cb !== 'function') {
+      console.log('[pomeloclient.processMessage] cb is not a function for request ' + msg.id);
+      return;
+    }
+
+    cb(msg.body);
+    return;
+  }
+
+  // server push message or old format message
+  processCall(msg);
+
+  //if no id then it should be a server push message
+  function processCall(msg) {
+    var route = msg.route;
+    if(!!route) {
+      if (!!msg.body) {
+        var body = msg.body.body;
+        if (!body) {body = msg.body;}
+        pomelo.emit(route, body);
+      } else {
+        pomelo.emit(route,msg);
+      }
+    } else {
+      pomelo.emit(msg.body.route,msg.body);
+    }
+  }
+};
+
+var processMessageBatch = function(pomelo, msgs) {
+  for(var i=0, l=msgs.length; i<l; i++) {
+    processMessage(pomelo, msgs[i]);
+  }
+};
+
+function filter(msg,route){
+  if(route.indexOf('area.') === 0){
+    msg.areaId = pomelo.areaId;
+  }
+
+  msg.timestamp = Date.now();
+  return msg;
+}
+
+
+function queryEntry(uid, callback) {
+  var route = 'gate.gateHandler.queryEntry';
+  pomelo.init({
+    // testing code
+    // host: 'pomelo17.server.163.org',
+    host: 'localhost',
+    // testing code
+    port: 3014,
+    log: true
+  }, function() {
+    pomelo.request(route, {
+      uid: uid
+    }, function(data) {
+      pomelo.disconnect();
+      if(data.code === 500) {
+        console.error('LOGIN_ERROR');
+        return;
+      }
+      callback(data.host, data.port);
+    });
+  });
+};
+
+// testing code
+var username = 'user_';
+// username += actor.id;
+// testing code
+
+var rid = 'xx';
+
+queryEntry(username, function(host, port) {
+  pomelo.init({
+    host: host,
+    port: port,
+    log: true
+  }, function() {
+    var route = "connector.entryHandler.enter";
+    pomelo.request(route, {
+      username: username,
+      rid: rid
+    }, function(data) {
+      if(data.error) {
+        console.error('DUPLICATE_ERROR');
+        return;
+      }
+
+      route = "chat.chatHandler.send";
+      pomelo.request(route, {
+        rid: rid,
+        content: 'hi ~',
+        from: username,
+        target: '*' 
+      }, function() {});
+
+    });
+  });
+});
+
