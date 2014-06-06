@@ -31,9 +31,9 @@ Protocol.encode = function(id,route,msg){
     return bt2Str(byteArray,0,byteArray.length);
 };
 
-var socket = null;
+var sock = null;
 var id = 1;
-var callbacks = {};
+var cbDict = {};
 
 var pomelo = Object.create(EventEmitter.prototype);
 pomelo.init = function(params, cb) {
@@ -47,23 +47,24 @@ pomelo.init = function(params, cb) {
     url +=  ':' + port;
   }
 
-  socket = io.connect(url, {'force new connection': true, reconnect: false});
+  sock = io.connect(url, {'force new connection': true, reconnect: false});
 
-  socket.on('connect', function(){
+  sock.on('connect', function(){
     console.log('[pomelo.init] websocket connected!');
     if (cb) {
-      cb(socket);
+      cb(sock);
     }
   });
 
-  socket.on('reconnect', function() {
+  sock.on('reconnect', function() {
     console.log('reconnect');
   });
 
-  socket.on('message', function(data){
+  sock.on('message', function(data){
     if(typeof data === 'string') {
       data = JSON.parse(data);
     }
+    // console.log('data = ', data);
     if(data instanceof Array) {
       processMessageBatch(pomelo, data);
     } else {
@@ -71,19 +72,19 @@ pomelo.init = function(params, cb) {
     }
   });
 
-  socket.on('error', function(err) {
+  sock.on('error', function(err) {
     console.log(err);
   });
 
-  socket.on('disconnect', function(reason) {
+  sock.on('disconnect', function(reason) {
     pomelo.emit('disconnect', reason);
   });
 };
 
 pomelo.disconnect = function() {
-  if(socket) {
-    socket.disconnect();
-    socket = null;
+  if(sock) {
+    sock.disconnect();
+    sock = null;
   }
 };
 
@@ -106,9 +107,9 @@ pomelo.request = function(route) {
   }
   msg = filter(msg,route);
   id++; 
-  callbacks[id] = cb;
+  cbDict[id] = cb;
   var sg = Protocol.encode(id,route,msg);
-  socket.send(sg);
+  sock.send(sg);
 };
 
 pomelo.notify = function(route,msg) {
@@ -119,11 +120,11 @@ var processMessage = function(pomelo, msg) {
   var route;
   if(msg.id) {
     //if have a id then find the callback function with the request
-    var cb = callbacks[msg.id];
+    var cb = cbDict[msg.id];
 
-    delete callbacks[msg.id];
+    delete cbDict[msg.id];
     if(typeof cb !== 'function') {
-      console.log('[pomeloclient.processMessage] cb is not a function for request ' + msg.id);
+      console.log('[pomelo.processMessage] cb is not a function for request ' + msg.id);
       return;
     }
 
@@ -172,7 +173,7 @@ function queryEntry(uid, callback) {
   pomelo.init({
     // testing code
     // host: 'pomelo17.server.163.org',
-    host: 'localhost',
+    host: '127.0.0.1',
     // testing code
     port: 3014,
     log: true
@@ -180,6 +181,7 @@ function queryEntry(uid, callback) {
     pomelo.request(route, {
       uid: uid
     }, function(data) {
+      console.error('QueryEntry: data = ', data);
       pomelo.disconnect();
       if(data.code === 500) {
         console.error('LOGIN_ERROR');
@@ -193,6 +195,7 @@ function queryEntry(uid, callback) {
 // testing code
 var username = 'user_';
 // username += actor.id;
+console.error('username = ', username);
 // testing code
 
 var rid = 'xx';
