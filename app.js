@@ -27,12 +27,10 @@ if (mode === 'master') {
 
 process.on('uncaughtException', function(err) {
   /* temporary code */
-  /*
 	console.error(' Caught exception: ' + err.stack);
 	if (!!robot && !!robot.agent){
 		robot.agent.socket.emit('crash', err.stack);
 	}
 	fs.appendFile('.log', err.stack, function (err) {});
-	*/
   /* temporary code */
 });

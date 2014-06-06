@@ -1,35 +1,6 @@
 var EventEmitter = require('events').EventEmitter;
 var io = require('socket.io-client');
-
-var HEADER = 5;
-
-var bt2Str = function(byteArray,start,end) {
-    var result = "";
-    for(var i = start; i < byteArray.length && i<end; i++) {
-        result = result + String.fromCharCode(byteArray[i]);
-    };
-    return result;
-}
-
-var Protocol = {};
-Protocol.encode = function(id,route,msg){
-    var msgStr = JSON.stringify(msg);
-    if (route.length>255) { throw new Error('route maxlength is overflow'); }
-    var byteArray = new Uint16Array(HEADER + route.length + msgStr.length);
-    var index = 0;
-    byteArray[index++] = (id>>24) & 0xFF;
-    byteArray[index++] = (id>>16) & 0xFF;
-    byteArray[index++] = (id>>8) & 0xFF;
-    byteArray[index++] = id & 0xFF;
-    byteArray[index++] = route.length & 0xFF;
-    for(var i = 0;i<route.length;i++){
-        byteArray[index++] = route.charCodeAt(i);
-    }
-    for (var i = 0; i < msgStr.length; i++) {
-        byteArray[index++] = msgStr.charCodeAt(i);
-    }
-    return bt2Str(byteArray,0,byteArray.length);
-};
+var Protocol = require('./../../app/script/protocol.js');
 
 var sock = null;
 var id = 1;
@@ -64,7 +35,6 @@ pomelo.init = function(params, cb) {
     if(typeof data === 'string') {
       data = JSON.parse(data);
     }
-    // console.log('data = ', data);
     if(data instanceof Array) {
       processMessageBatch(pomelo, data);
     } else {
@@ -181,7 +151,6 @@ function queryEntry(uid, callback) {
     pomelo.request(route, {
       uid: uid
     }, function(data) {
-      console.error('QueryEntry: data = ', data);
       pomelo.disconnect();
       if(data.code === 500) {
         console.error('LOGIN_ERROR');
@@ -194,8 +163,7 @@ function queryEntry(uid, callback) {
 
 // testing code
 var username = 'user_';
-// username += actor.id;
-console.error('username = ', username);
+username += actor.id;
 // testing code
 
 var rid = 'xx';
